@@ -33,9 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.bussiness.curemegptapp.ui.theme.AppGradientColors
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -109,28 +112,32 @@ fun VerifyOtpScreen(
 
         Spacer(Modifier.height(55.dp))
 
-        // Centered OTP Input and Button container aligned to 330.dp (width of the OTP boxes group)
+        // Centered OTP Input and Button container
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.width(330.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // OTP INPUT
-                OtpInputField(
-                    otp = state.otp,
-                    onOtpChange = { entered ->
-                        viewModel.onOtpChange(entered)
-                    }
-                )
+            // OTP INPUT
+            OtpInputField(
+                otp = state.otp,
+                onOtpChange = { entered ->
+                    viewModel.onOtpChange(entered)
+                }
+            )
 
-                Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(20.dp))
 
-                GradientButton(
-                    text = stringResource(R.string.verify_and_continue),
-                    onClick = {
+            // Verify and Continue button with explicit 330.dp width matching OTP boxes
+            Box(
+                modifier = Modifier
+                    .width(330.dp)
+                    .height(54.dp)
+                    .clip(RoundedCornerShape(27.dp))
+                    .background(brush = Brush.linearGradient(AppGradientColors))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         if (state.otp.trim().isEmpty()) {
                             Toast.makeText(context, "Please Enter OTP", Toast.LENGTH_SHORT).show()
                         } else if (state.otp.trim().length < 5) {
@@ -155,8 +162,14 @@ fun VerifyOtpScreen(
                             )
                         }
                     },
-                    modifier = Modifier.height(54.dp),
-                    horizontalPadding = 0.dp
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.verify_and_continue),
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = FontFamily(Font(R.font.urbanist_semibold))
                 )
             }
         }

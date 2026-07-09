@@ -113,7 +113,7 @@ fun PrivacyConsentScreen(navController: NavHostController) {
             .background(Color.White)
             .verticalScroll(rememberScrollState())) {
 
-        // Top Gradient Header
+
         GradientHeader(
             heading = stringResource(R.string.privacy_consent_title),
             description = stringResource(R.string.privacy_consent_description))
@@ -121,23 +121,26 @@ fun PrivacyConsentScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(26.dp))
 
         // Important Disclaimers Section
-        Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)) {
-            // Important Disclaimers Header with Icon
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 16.dp)) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+
+            Row(verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 16.dp)) {
+
                 Image(
                         painter = painterResource(id = R.drawable.ic_warning),
                         contentDescription = "Warning",
                         modifier = Modifier.size(42.dp)
                     )
+
                 Spacer(modifier = Modifier.width(10.dp))
+
                 Text(
                     text = stringResource(R.string.important_disclaimers_title),
                     fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp,
-                    color = Color.Black
+                    color = Color(0xFF4338CA)
                 )
             }
             // Medical Disclaimer Box

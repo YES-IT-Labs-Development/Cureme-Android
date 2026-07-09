@@ -120,8 +120,10 @@ fun OTPVerificationDialog(
 
                 Text(
                     text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontSize = 17.sp,
+                    fontFamily = FontFamily(Font(R.font.urbanist_medium)),
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -129,6 +131,7 @@ fun OTPVerificationDialog(
                 Text(
                     text = message,
                     fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                     color = Color.Gray,
                     textAlign = TextAlign.Center
                 )
@@ -241,7 +244,8 @@ fun OTPInputField(
             textStyle = TextStyle(
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = FontFamily(Font(R.font.urbanist_semibold))
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true
