@@ -589,7 +589,8 @@ fun DisclaimerBox(
     description: String,
     titleColor: Color = Color.Black,
     backColor: Color = Color(0x084338CA),
-    isRed :Boolean = false
+    isRed :Boolean = false,
+    isBlue :Boolean = false,
 ) {
     Column(
         modifier = Modifier
@@ -605,7 +606,11 @@ fun DisclaimerBox(
             fontFamily = FontFamily(Font(R.font.urbanist_medium)),
             fontWeight = FontWeight.Medium,
             fontSize = 14.sp,
-            color = if(!isRed)titleColor else Color(0xFFF31D1D)
+            color = when {
+                isRed -> Color(0xFFF31D1D)
+                isBlue -> Color(0xFF4338CA)
+                else -> titleColor
+            }
         )
         Spacer(modifier = Modifier.height(7.dp))
         Text(

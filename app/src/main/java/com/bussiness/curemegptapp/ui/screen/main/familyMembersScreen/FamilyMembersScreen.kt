@@ -88,6 +88,7 @@ fun FamilyMembersScreen(
     viewModel: FamilyMemberProfileViewModel = hiltViewModel()
 ) {
 
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     DisposableEffect(lifecycleOwner) {
@@ -113,9 +114,10 @@ fun FamilyMembersScreen(
     var showSheet by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedMemberId by remember { mutableStateOf<Int>(0) }
-    val filterOptions = listOf(
-        "All Members", "Children", "Adults", "Seniors", "Friends", "Relatives"
-    )
+    val allMembers by viewModel.members.collectAsState()
+    val filterOptions = remember(allMembers) {
+        listOf("All Members") + allMembers.map { "${it.name} (${it.relationship})" }
+    }
 
     Box(
         modifier = Modifier
@@ -145,7 +147,7 @@ fun FamilyMembersScreen(
                     fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                     fontWeight = FontWeight.Medium,
                     color = Color.Black,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
+                    modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 24.dp, bottom = 10.dp)
                 )
             }
 
@@ -172,7 +174,10 @@ fun FamilyMembersScreen(
                         Column {
                             Text(
                                 text = stringResource(R.string.family_profiles_title),
-                                fontSize = 24.sp
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                                fontWeight = FontWeight.Black,
+                                color = Color.Black
                             )
 
                             Spacer(Modifier.height(5.dp))
@@ -183,6 +188,8 @@ fun FamilyMembersScreen(
                                     uiState.totalFamilyMembers
                                 ),
                                 fontSize = 15.sp,
+                                fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                                fontWeight = FontWeight.Normal,
                                 color = Color(0xFF909090)
                             )
                         }
@@ -252,10 +259,19 @@ fun FamilyMembersScreen(
                             onValueChange = { viewModel.updateSearch(it) }, // ✅ VM call
                             singleLine = true,
                             maxLines = 1,
+                            textStyle = TextStyle(
+                                fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 15.sp,
+                                color = Color.Black
+                            ),
                             placeholder = {
                                 Text(
-                                    stringResource(R.string.search_placeholder),
-                                    fontWeight = FontWeight.Light
+                                    text = stringResource(R.string.search_placeholder),
+                                    fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 15.sp,
+                                    color = Color(0xFF909090)
                                 )
                             },
                             leadingIcon = {
@@ -448,7 +464,7 @@ fun FamilyMemberCard(
             verticalAlignment = Alignment.Top
         ) {
 
-            // Profile Image
+            // Profile Image (Squircle: 80.dp size with 20.dp Rounded Corner Shape)
             val hasValidImage = !member.imageUrl.isNullOrEmpty() &&
                     member.imageUrl != "https://curemegpt.tgastaging.com/" &&
                     member.imageUrl != "https://curemegpt.tgastaging.com" &&
@@ -458,41 +474,45 @@ fun FamilyMemberCard(
                 AsyncImage(
                     model = member.imageUrl,
                     contentDescription = null,
-                    placeholder = painterResource(R.drawable.ic_profile_image),
-                    error = painterResource(R.drawable.ic_profile_image),
+                    placeholder = painterResource(R.drawable.user_not_found),
+                    error = painterResource(R.drawable.user_not_found),
                     modifier = Modifier
-                        .size(width = 72.dp, height = 92.dp)
-                        .clip(RoundedCornerShape(16.dp)),
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(20.dp)),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_profile_image),
+                    painter = painterResource(id = R.drawable.user_not_found),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(width = 72.dp, height = 92.dp)
-                        .clip(RoundedCornerShape(16.dp)),
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(20.dp)),
                     contentScale = ContentScale.Crop
                 )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Center Content
+
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .height(80.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
 
                 // Name + Age Badge
                 Row(
-                    verticalAlignment = Alignment.Top
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
 
                     Text(
                         text = member.name,
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1A1A1A),
+                        fontFamily = FontFamily(Font(R.font.urbanist_semibold)),
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF000000),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -510,28 +530,27 @@ fun FamilyMemberCard(
                                 vertical = 2.dp
                             ),
                             fontSize = 10.sp,
+                            fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                             color = Color(0xFF6A5AE0),
                             fontWeight = FontWeight.Medium
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
-
                 // Relation
                 Text(
                     text = member.relationship,
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                    fontWeight = FontWeight.Normal,
+                    color = Color(0xFF374151)
                 )
-
-                Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    // Appointments
+                    // Appointments (complete/total format, e.g. 0/2)
                     Icon(
                         painter = painterResource(R.drawable.ic_calender_health_icon),
                         contentDescription = null,
@@ -543,12 +562,15 @@ fun FamilyMemberCard(
 
                     Text(
                         text = member.appointments,
-                        fontSize = 15.sp
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily(Font(R.font.urbanist_medium)),
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF000000)
                     )
 
                     Spacer(modifier = Modifier.width(18.dp))
 
-                    // Medications
+                    // Medications (normal integer value format, e.g. 3)
                     Icon(
                         painter = painterResource(R.drawable.ic_medication_icon_2),
                         contentDescription = null,
@@ -560,7 +582,10 @@ fun FamilyMemberCard(
 
                     Text(
                         text = member.medications,
-                        fontSize = 15.sp
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily(Font(R.font.urbanist_medium)),
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF000000)
                     )
                 }
             }

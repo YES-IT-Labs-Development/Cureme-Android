@@ -357,4 +357,6 @@ interface Repository {
     ): Flow<NetworkResult<String>>
 
     fun viewSummary(chatId: Int): Flow<NetworkResult<com.bussiness.curemegptapp.apimodel.chatModel.SummaryData?>>
+
+    fun deleteAccount(feedback: String): Flow<NetworkResult<String>>
 }

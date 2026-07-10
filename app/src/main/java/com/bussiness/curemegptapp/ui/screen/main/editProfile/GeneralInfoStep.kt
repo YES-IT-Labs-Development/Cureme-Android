@@ -59,6 +59,11 @@ fun GeneralInfoStep(
 ) {
 
 
+    val allergyOptions = listOf(
+        "Drug", "Food", "Environmental", "Aspirin",
+        "Latex", "Ibuprofen", "Shellfish", "Nuts",
+        "Penicillin", "Others"
+    )
     val profileData = viewModel.profileFormState
     val context = LocalContext.current
 
@@ -71,7 +76,10 @@ fun GeneralInfoStep(
     /* Update UI when API response arrives */
     LaunchedEffect(profileData) {
         bloodGroup = profileData.bloodGroup
-        selectedAllergies = profileData.allergies.toSet()
+        val initialCustomAllergy = profileData.allergies.filter { it !in allergyOptions && it != "Others" }.joinToString(", ")
+        customAllergy = initialCustomAllergy
+        selectedAllergies = profileData.allergies.filter { it in allergyOptions }.toSet() +
+            if (initialCustomAllergy.isNotEmpty()) setOf("Others") else emptySet()
         Log.d("TESTING_SELECTED_ALLERGIES", "Selected allergies: "+ selectedAllergies.size)
         emergencyName = profileData.emergencyContactName
         emergencyPhone = profileData.emergencyContactPhone
@@ -82,12 +90,6 @@ fun GeneralInfoStep(
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
         }
     }
-
-    val allergyOptions = listOf(
-        "Drug", "Food", "Environmental", "Aspirin",
-        "Latex", "Ibuprofen", "Shellfish", "Nuts",
-        "Penicillin", "Others"
-    )
 
     val bloodOptions = listOf(
         "A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"
@@ -211,21 +213,6 @@ fun GeneralInfoStep(
         Spacer(modifier = Modifier.height(16.dp))
 
         if ("Others" in selectedAllergies) {
-            var showValues = ""
-            selectedAllergies.forEach { item ->
-                if (!allergyOptions.contains(item)) {
-                    showValues += "$item, "
-                }
-            }
-
-            if (showValues.isNotEmpty()) {
-                showValues = showValues.substring(0, showValues.length - 2)
-            }
-
-            LaunchedEffect(Unit) {
-                customAllergy = showValues
-            }
-
             ProfileInputWithoutLabelField(
                 placeholder = stringResource(R.string.write_allergy_placeholder),
                 value = customAllergy,
@@ -262,7 +249,11 @@ fun GeneralInfoStep(
                 if (validateFields()) {
                     val allergiesList = selectedAllergies.toMutableList()
                     if ("Others" in selectedAllergies && customAllergy.isNotEmpty()) {
-                        allergiesList.add(customAllergy)
+                        customAllergy.split(Regex(",\\s*")).filter { it.isNotBlank() }.forEach {
+                            if (it !in allergiesList) {
+                                allergiesList.add(it)
+                            }
+                        }
                     }
 
                     viewModel.updateGeneralInfo(
@@ -271,7 +262,6 @@ fun GeneralInfoStep(
                         emergencyName = emergencyName,
                         emergencyPhone = emergencyPhone,
                         onSuccess = {
-                            Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT).show()
                             onNext()
                         },
                         onError = { errorMsg ->

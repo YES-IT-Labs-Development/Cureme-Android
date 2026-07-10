@@ -10,6 +10,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -150,9 +151,18 @@ fun ChatDataScreen(
         onClose = { showDrawer = false },
         drawerWidth = 320.dp,
         drawerContent = {
+            val drawerSelectedUser = selectedMember?.let { member ->
+                val isMyself = member.relationship?.trim()?.equals("myself", ignoreCase = true) == true
+                if (isMyself) {
+                    "${member.name} (Myself)"
+                } else {
+                    member.name
+                }
+            } ?: ""
+
             MenuDrawer(
                 onDismiss = { showDrawer = false },
-                selectedUser = selectedMember?.name ?: "",
+                selectedUser = drawerSelectedUser,
                 onUserChange = { user ->
                     selectedUser = user.name
                     val hasMyself =
@@ -240,6 +250,7 @@ fun ChatDataScreen(
                     .statusBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(12.dp))
 
                 ChatHeader(
                     logoRes = R.drawable.ic_logo,

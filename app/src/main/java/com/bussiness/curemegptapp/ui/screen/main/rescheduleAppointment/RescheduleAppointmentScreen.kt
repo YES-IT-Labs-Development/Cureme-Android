@@ -464,8 +464,8 @@ fun RescheduleAppointmentScreen(navController: NavHostController,
 
     if (showDialogSuccessFully) {
         SuccessfulDialog(
-            title = stringResource(R.string.reschedule_success_title),
-            description = stringResource(R.string.reschedule_success_description),
+            title = "Appointment Updated\nSuccessfully",
+            description = "Your changes have been saved.",
             onDismiss = {
                 showDialogSuccessFully = false
                 navController.popBackStack()

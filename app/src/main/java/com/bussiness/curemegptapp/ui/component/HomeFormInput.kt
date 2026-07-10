@@ -47,7 +47,7 @@ fun HomeHeader(
         modifier = modifier
             .fillMaxWidth()
             .background(Color.White)
-            .padding(top = 10.dp),
+            .padding(top = 20.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

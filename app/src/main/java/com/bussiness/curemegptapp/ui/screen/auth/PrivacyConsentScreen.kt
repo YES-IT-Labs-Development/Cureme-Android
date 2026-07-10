@@ -59,7 +59,7 @@ import com.bussiness.curemegptapp.ui.component.GradientHeader
 import com.bussiness.curemegptapp.ui.component.RoundedCustomCheckbox
 
 @Composable
-fun PrivacyConsentScreen(navController: NavHostController) {
+fun PrivacyConsentScreen(navController: NavHostController, fromScreen: String? = "") {
 
     // Consent Checkboxes
     var checkbox1 by remember { mutableStateOf(false) }
@@ -116,7 +116,8 @@ fun PrivacyConsentScreen(navController: NavHostController) {
 
         GradientHeader(
             heading = stringResource(R.string.privacy_consent_title),
-            description = stringResource(R.string.privacy_consent_description))
+            description = stringResource(R.string.privacy_consent_description)
+        )
 
         Spacer(modifier = Modifier.height(26.dp))
 
@@ -140,7 +141,7 @@ fun PrivacyConsentScreen(navController: NavHostController) {
                     fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp,
-                    color = Color(0xFF4338CA)
+                    color = Color.Black
                 )
             }
             // Medical Disclaimer Box
@@ -149,7 +150,8 @@ fun PrivacyConsentScreen(navController: NavHostController) {
                 description = stringResource(R.string.medical_disclaimer_description),
                 titleColor = Color(0xFF4338CA),
                 backColor = Color(0x084338CA),
-                isRed = true
+                isRed = false,
+                isBlue = true
             )
             Spacer(modifier = Modifier.height(16.dp))
             // Data Privacy Box
@@ -223,7 +225,13 @@ fun PrivacyConsentScreen(navController: NavHostController) {
         GradientButton(
             text =  stringResource(R.string.i_agree_continue_button),
             onClick = {   if (allChecked) {
-                navController.navigate(AppDestination.ProfileCompletion)
+                if (fromScreen == "profile_completion") {
+                    navController.navigate("openChat?from=auth") {
+                        popUpTo(AppDestination.PrivacyConsent(fromScreen)) { inclusive = true }
+                    }
+                } else {
+                    navController.navigate(AppDestination.ProfileCompletion)
+                }
             } else {
                 Toast.makeText(
                     context,

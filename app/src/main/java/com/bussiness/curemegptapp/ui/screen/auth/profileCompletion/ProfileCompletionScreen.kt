@@ -46,9 +46,15 @@ fun ProfileCompletionScreen(
         // Top Bar
         TopBarHeader(
             currentStep = currentStep,
-            onBackClick = { viewModel.goToPreviousStep() },
+            onBackClick = {
+                if (currentStep > 0) {
+                    viewModel.goToPreviousStep()
+                } else {
+                    navController.popBackStack()
+                }
+            },
             onSkipClick = {
-                navController.navigate("openChat?from=auth") {
+                navController.navigate(AppDestination.MainScreen) {
                     popUpTo(AppDestination.ProfileCompletion) { inclusive = true }
                 }
             }
@@ -95,7 +101,7 @@ fun ProfileCompletionScreen(
             },
             onConfirm = {
                 showAlertDialog = false
-                navController.navigate("openChat?from=auth")
+                navController.navigate(AppDestination.PrivacyConsent(fromScreen = "profile_completion"))
             }
         )
     }

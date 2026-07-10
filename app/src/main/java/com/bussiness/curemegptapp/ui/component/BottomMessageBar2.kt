@@ -320,8 +320,17 @@ fun BottomMessageBar2(
                                     )
                                 }
 
+                                val displayName = selectedMember?.let { member ->
+                                    val isMyself = member.relationship?.trim()?.equals("myself", ignoreCase = true) == true
+                                    if (isMyself) {
+                                        "${member.name} (Myself)"
+                                    } else {
+                                        member.name
+                                    }
+                                } ?: "Select User"
+
                                 Text(
-                                    selectedMember?.name ?: "Select User",
+                                    displayName,
                                     color = if (isCaseChat) Color.Gray else Color(0xFF5B47DB),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium
@@ -424,13 +433,22 @@ fun BottomMessageBar2(
                                                     )
                                                 }
 
-                                                Text(
-                                                    text = member.name,
-                                                    fontSize = 16.sp,
-                                                    fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                                                    fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-                                                    color = if (isSelected) Color(0xFF4338CA) else Color(0xFF374151)
-                                                )
+                                                 val memberDisplayName = member.let {
+                                                     val isMyself = it.relationship?.trim()?.equals("myself", ignoreCase = true) == true
+                                                     if (isMyself) {
+                                                         "${it.name} (Myself)"
+                                                     } else {
+                                                         it.name
+                                                     }
+                                                 }
+
+                                                 Text(
+                                                     text = memberDisplayName,
+                                                     fontSize = 16.sp,
+                                                     fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                                                     fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                                                     color = if (isSelected) Color(0xFF4338CA) else Color(0xFF374151)
+                                                 )
                                             }
 
                                             if (isSelected) {

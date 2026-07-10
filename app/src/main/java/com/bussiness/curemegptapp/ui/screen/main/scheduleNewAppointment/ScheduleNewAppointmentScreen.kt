@@ -432,10 +432,15 @@ fun ScheduleNewAppointmentScreen(
     }
 
     if (showDialogSuccessFully) {
-        SuccessfulDialog(title = stringResource(R.string.schedule_success_title)/*"Appointment Scheduled \nSuccessfully"*/, description = stringResource(R.string.schedule_success_description)/*"Your appointment reminder are set."*/,
-            onDismiss = { showDialogSuccessFully = false
-                navController.popBackStack()},
-            onOkClick = { showDialogSuccessFully = false
+        SuccessfulDialog(
+            title = "Appointment Scheduled\nSuccessfully",
+            description = "Your appointment reminder are set.",
+            onDismiss = {
+                showDialogSuccessFully = false
+                navController.popBackStack()
+            },
+            onOkClick = {
+                showDialogSuccessFully = false
                 navController.popBackStack()
             }
         )

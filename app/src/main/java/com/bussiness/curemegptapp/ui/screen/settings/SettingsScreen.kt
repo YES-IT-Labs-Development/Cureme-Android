@@ -95,14 +95,17 @@ fun SettingsScreen(
                 elevation = CardDefaults.cardElevation(0.dp)
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    staticPages.forEachIndexed { index, page ->
+                    val filteredPages = staticPages.filter {
+                        val slug = it.slug.lowercase()
+                        slug != "faq" && slug != "frequently-ask-questions" && slug != "frequently-asked-questions"
+                    }
+                    filteredPages.forEachIndexed { index, page ->
                         val iconRes = when (page.slug.lowercase()) {
                             "about-us" -> R.drawable.ic_info_setting_icon
                             "privacy-policy" -> R.drawable.ic_privacy_policy_setting_icon
                             "terms-conditions" -> R.drawable.ic_terms_condition_setting_icon
                             "account-privacy" -> R.drawable.ic_account_setting_icon
                             "help-support" -> R.drawable.ic_help_setting_icon
-                            "faq", "frequently-ask-questions", "frequently-asked-questions" -> R.drawable.ic_ask_setting_icon
                             else -> R.drawable.ic_privacy_policy_setting_icon
                         }
 
@@ -137,11 +140,6 @@ fun SettingsScreen(
                                             navController.currentBackStackEntry?.savedStateHandle?.set("content", fetchedPage.content)
                                             navController.navigate(AppDestination.HelpSupportScreen)
                                         }
-                                        "faq", "frequently-ask-questions", "frequently-asked-questions" -> {
-                                            navController.currentBackStackEntry?.savedStateHandle?.set("title", fetchedPage.title)
-                                            navController.currentBackStackEntry?.savedStateHandle?.set("content", fetchedPage.content)
-                                            navController.navigate(AppDestination.FrequentlyAskQuestionsScreen)
-                                        }
                                         else -> {
                                             navController.currentBackStackEntry?.savedStateHandle?.set("title", fetchedPage.title)
                                             navController.currentBackStackEntry?.savedStateHandle?.set("content", fetchedPage.content)
@@ -152,10 +150,17 @@ fun SettingsScreen(
                             }
                         )
 
-                        if (index < staticPages.lastIndex) {
-                            SettingsMenuDivider()
-                        }
+                        SettingsMenuDivider()
                     }
+
+                    // Static Frequently Asked Questions Item
+                    SettingsMenuItem(
+                        icon = R.drawable.ic_ask_setting_icon,
+                        title = "Frequently Asked Questions",
+                        onClick = {
+                            navController.navigate(AppDestination.FrequentlyAskQuestionsScreen)
+                        }
+                    )
                 }
             }
 

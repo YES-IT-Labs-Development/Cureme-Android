@@ -27,7 +27,7 @@ sealed class AppDestination {
     data object CreateAccount : AppDestination()
 
     @Serializable
-    data object PrivacyConsent : AppDestination()
+    data class PrivacyConsent(val fromScreen: String? = "") : AppDestination()
 
     @Serializable
     data object ProfileCompletion : AppDestination()

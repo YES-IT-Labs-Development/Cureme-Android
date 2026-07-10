@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
 import com.bussiness.curemegptapp.R
 import com.bussiness.curemegptapp.ui.component.GradientRedButton
 import com.bussiness.curemegptapp.ui.component.GradientViewSummaryButton
@@ -206,7 +207,9 @@ fun AppointmentCard(appointment: AppointmentUIModel, onEditClick: () -> Unit,
                         fontSize = 14.sp,
                         color = Color.Black,
                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                        fontWeight = FontWeight.Normal
+                        fontWeight = FontWeight.Normal,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 

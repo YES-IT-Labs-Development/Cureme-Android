@@ -81,7 +81,7 @@ class FamilyMemberProfileViewModel @Inject constructor(private val repository: R
             age = calculateAge(dob),
             relationship = relationship.clean() ?: "Unknown",
             appointments = "$completedAppointmentCount/$appointmentCount",
-            medications = "$completedMedicationCount/$medicationCount",
+            medications = "$medicationCount",
             imageUrl = if (!profileImage.isNullOrBlank()) {
                 val cleaned = profileImage.clean() ?: ""
                 val url = if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) {
@@ -115,17 +115,11 @@ class FamilyMemberProfileViewModel @Inject constructor(private val repository: R
                         member.name.contains(query, true) ||
                         member.relationship.contains(query, true)
 
-                val matchesFilter = when (filter) {
-                    "All Members" -> true
-                    "Children" -> (member.age ?: 0) < 18
-                    "Adults" -> (member.age ?: 0) in 18..64
-                    "Seniors" -> (member.age ?: 0) >= 65
-                    "Friends" -> member.relationship == "Friend"
-                    "Relatives" -> member.relationship in listOf(
-                        "Son", "Daughter", "Mother", "Father", "Spouse"
-                    )
-
-                    else -> true
+                val matchesFilter = if (filter == "All Members") {
+                    true
+                } else {
+                    val key = "${member.name} (${member.relationship})"
+                    key.equals(filter, ignoreCase = true)
                 }
 
                 matchesSearch && matchesFilter

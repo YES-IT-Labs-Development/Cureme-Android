@@ -82,11 +82,11 @@ fun VerifyOtpScreen(
             onDismiss = { showDialog = false },
             onSetupProfile = {
                 showDialog = false
-                navController.navigate(AppDestination.PrivacyConsent)
+                navController.navigate(AppDestination.PrivacyConsent())
             },
             onGoToAskAI = {
                 showDialog = false
-                navController.navigate("openChat?from=auth")
+                navController.navigate(AppDestination.PrivacyConsent(fromScreen = "profile_completion"))
             }
         )
     }
@@ -110,9 +110,9 @@ fun VerifyOtpScreen(
             )
         )
 
-        Spacer(Modifier.height(55.dp))
+        Spacer(Modifier.height(45.dp))
 
-        // Centered OTP Input and Button container
+        // Centered OTP Input, Button, and Resend container
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -125,104 +125,87 @@ fun VerifyOtpScreen(
                 }
             )
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // Verify and Continue button with explicit 330.dp width matching OTP boxes
-            Box(
-                modifier = Modifier
-                    .width(330.dp)
-                    .height(54.dp)
-                    .clip(RoundedCornerShape(27.dp))
-                    .background(brush = Brush.linearGradient(AppGradientColors))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        if (state.otp.trim().isEmpty()) {
-                            Toast.makeText(context, "Please Enter OTP", Toast.LENGTH_SHORT).show()
-                        } else if (state.otp.trim().length < 5) {
-                            Toast.makeText(context, "Please enter a valid 5-digit OTP", Toast.LENGTH_SHORT).show()
-                        } else {
-                            viewModel.forgotOtpRequest(
-                                email = email.toString(),
-                                fromScreen = fromScreen.toString(),
-                                onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() },
-                                onSuccess = {
-                                    if (fromScreen == "create") {
-                                        showDialog = true
-                                    } else {
-                                        val route = "${AppDestination.NewPassword}?from=${fromScreen}&email=${email}"
-                                        navController.navigate(route) {
-                                            popUpTo("verifyOtp?from={from}&email={email}") {
-                                                inclusive = true
-                                            }
+            // Verify and Continue button (full length blue gradient button)
+            GradientButton(
+                text = stringResource(R.string.verify_and_continue),
+                onClick = {
+                    if (state.otp.trim().isEmpty()) {
+                        Toast.makeText(context, "Please Enter OTP", Toast.LENGTH_SHORT).show()
+                    } else if (state.otp.trim().length < 5) {
+                        Toast.makeText(context, "Please enter a valid 5-digit OTP", Toast.LENGTH_SHORT).show()
+                    } else {
+                        viewModel.forgotOtpRequest(
+                            email = email.toString(),
+                            fromScreen = fromScreen.toString(),
+                            onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() },
+                            onSuccess = {
+                                if (fromScreen == "create") {
+                                    showDialog = true
+                                } else {
+                                    val route = "${AppDestination.NewPassword}?from=${fromScreen}&email=${email}"
+                                    navController.navigate(route) {
+                                        popUpTo("verifyOtp?from={from}&email={email}") {
+                                            inclusive = true
                                         }
                                     }
                                 }
-                            )
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.verify_and_continue),
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = FontFamily(Font(R.font.urbanist_semibold))
-                )
-            }
-        }
-
-
-        Spacer(Modifier.height(21.dp))
-
-        // RESEND TEXT
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            Text(
-                text = stringResource(R.string.didnt_receive_code),
-                color = Color.Black,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = FontFamily(Font(R.font.urbanist_medium))
+                            }
+                        )
+                    }
+                },
+                horizontalPadding = 24.dp
             )
-            if (timeLeft > 0) {
+
+            Spacer(Modifier.height(24.dp))
+
+            // RESEND TEXT
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(
-                    text = stringResource(R.string.resend_otp_in),
+                    text = stringResource(R.string.didnt_receive_code),
                     color = Color.Black,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
                     fontFamily = FontFamily(Font(R.font.urbanist_medium))
                 )
-                Spacer(Modifier.width(5.dp))
-                Text(
-                    text = "${timeLeft}s",
-                    color = Color(0xFF1E3A8A),
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = FontFamily(Font(R.font.urbanist_medium))
-                )
-            } else {
-                Text(
-                    text = stringResource(R.string.resend_now),
-                    color = Color(0xFF4338CA),
-                    fontSize = 15.sp,
-                    fontFamily = FontFamily(Font(R.font.urbanist_bold)),
-                    modifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        viewModel.sendOtpRequest(
-                            email=email.toString(),
-                            onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() },
-                            onSuccess = { data->
-                                Toast.makeText(context,"Otp :- "+data.otp, Toast.LENGTH_SHORT).show()
-                                timeLeft = 30
-                            }
-                        )
-
-                    }
-                )
+                if (timeLeft > 0) {
+                    Text(
+                        text = stringResource(R.string.resend_otp_in),
+                        color = Color.Black,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = FontFamily(Font(R.font.urbanist_medium))
+                    )
+                    Spacer(Modifier.width(5.dp))
+                    Text(
+                        text = "${timeLeft}s",
+                        color = Color(0xFF1E3A8A),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = FontFamily(Font(R.font.urbanist_medium))
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.resend_now),
+                        color = Color(0xFF4338CA),
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily(Font(R.font.urbanist_bold)),
+                        modifier = Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            viewModel.sendOtpRequest(
+                                email=email.toString(),
+                                onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() },
+                                onSuccess = { data->
+                                    Toast.makeText(context,"Otp :- "+data.otp, Toast.LENGTH_SHORT).show()
+                                    timeLeft = 30
+                                }
+                            )
+                        }
+                    )
+                }
             }
         }
 
@@ -326,17 +309,20 @@ fun OtpInputField(
         )
 
         // Visible OTP boxes
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             repeat(5) { index ->
                 Box(
                     modifier = Modifier
-                        .width(58.dp)
-                        .height(55.dp)
-                        // .size(48.dp)
+                        .size(56.dp)
                         .border(
                             1.dp,
                             if (index < otp.length) Color(0xFF4338CA) else Color(0xFFE5E7EB),
-                            RoundedCornerShape(46.dp)
+                            RoundedCornerShape(28.dp)
                         )
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },

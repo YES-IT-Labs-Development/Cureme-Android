@@ -2449,6 +2449,32 @@ class RepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
+    override fun deleteAccount(feedback: String): Flow<NetworkResult<String>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val response = api.deleteAccountRequest(feedback)
+            if (response.isSuccessful) {
+                val respBody = response.body()
+                if (respBody != null) {
+                    if (respBody.has("success") && respBody.get("success").asBoolean) {
+                        val message = if (respBody.has("message")) respBody.get("message").asString else "Account deleted successfully."
+                        emit(NetworkResult.Success(message))
+                    } else {
+                        val message = if (respBody.has("message")) respBody.get("message").asString else AppConstant.serverError
+                        emit(NetworkResult.Error(message))
+                    }
+                } else {
+                    emit(NetworkResult.Error(AppConstant.serverError))
+                }
+            } else {
+                emit(NetworkResult.Error(AppConstant.serverError))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(NetworkResult.Error(AppConstant.serverError))
+        }
+    }.flowOn(Dispatchers.IO)
+
 
     fun JsonObject.getStringSafe(key: String, default: String = ""): String {
         return if (has(key) && !get(key).isJsonNull) {

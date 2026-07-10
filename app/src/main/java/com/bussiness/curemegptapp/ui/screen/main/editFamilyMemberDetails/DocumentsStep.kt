@@ -67,6 +67,7 @@ fun DocumentsStep(
                 //  label = "Upload Files (X-Rays, Dental Scans, Prescriptions, Lab Reports)",
                 fileName = if (profileData.uploadedFiles.isEmpty()) stringResource(R.string.no_file_chosen) //"No file chosen"
                 else "${profileData.uploadedFiles.size} ${stringResource(R.string.files_selected)}", //files selected
+                buttonBgResId = R.drawable.ic_bg_button_blue,
                 onChooseClick = {
                     filePickerLauncher.launch(
                         arrayOf(
@@ -83,7 +84,7 @@ fun DocumentsStep(
                 fontSize = 12.sp,
                 color = Color.Gray,
                 modifier = Modifier
-                    .padding(top = 4.dp)
+                    .padding(top = 10.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null

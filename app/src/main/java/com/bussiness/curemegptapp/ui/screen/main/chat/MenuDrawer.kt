@@ -328,6 +328,10 @@ fun MenuDrawer(
                                 modifier = Modifier.padding(vertical = 8.dp)
                             ) {
                                 users.forEachIndexed { index, user ->
+                                    val isMyself = user.relationship?.trim()?.equals("myself", ignoreCase = true) == true
+                                    val displayName = if (isMyself) "${user.name} (Myself)" else user.name
+                                    val isSelected = displayName == selectedUserCurr
+
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -336,7 +340,7 @@ fun MenuDrawer(
                                                 indication = null
                                             ) {
                                                 showUserDropdown1 = !showUserDropdown1
-                                                selectedUserCurr = user.name
+                                                selectedUserCurr = displayName
                                                 onUserChange(user)
                                             }
                                             .padding(horizontal = 16.dp)
@@ -347,17 +351,17 @@ fun MenuDrawer(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = user.name,
+                                                text = displayName,
                                                 modifier = Modifier.weight(1f),
                                                 fontSize = 16.sp,
                                                 fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                                                fontWeight = if (user.name == selectedUserCurr) FontWeight.Medium else FontWeight.Normal,
-                                                color = if (user.name == selectedUserCurr) Color(0xFF4338CA) else Color(0xFF374151),
+                                                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                                                color = if (isSelected) Color(0xFF4338CA) else Color(0xFF374151),
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
 
-                                            if (user.name == selectedUserCurr) {
+                                            if (isSelected) {
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Image(
                                                     painter = painterResource(id = R.drawable.ic_tick_icon),

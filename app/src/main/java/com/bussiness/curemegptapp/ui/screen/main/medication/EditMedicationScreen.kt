@@ -458,11 +458,11 @@ fun EditMedicationScreen(
 
                 Spacer(Modifier.height(8.dp))
 
-                CustomMultiSelectPowerSpinner(
-                    selectedText = if (selectDayName.isBlank()) "Select Day" else selectDayName,
-                    selectedValues = selectedDays,
-                    onSelectionChanged = { newSelection ->
-                        selectedDays = newSelection
+                CustomPowerSpinner(
+                    selectedText = if (selectDayName.isBlank() || selectDayName == "Select Frequency") "Select Day" else selectDayName,
+                    onSelectionChanged = { reason ->
+                        selectDayName = reason
+                        selectedDays = setOf(reason)
                     },
                     horizontalPadding = 24.dp,
                     reasons = selectDayNameOptions
@@ -745,8 +745,8 @@ fun EditMedicationScreen(
 
     if (showDialogSuccessFully) {
         SuccessfulDialog(
-            title = stringResource(R.string.medication_update_success_title),
-            description = stringResource(R.string.medication_update_success_description),
+            title = "Medication Updated\nSuccessfully",
+            description = "Your changes have been saved.",
             onDismiss = {
                 showDialogSuccessFully = false
                 navController.popBackStack()

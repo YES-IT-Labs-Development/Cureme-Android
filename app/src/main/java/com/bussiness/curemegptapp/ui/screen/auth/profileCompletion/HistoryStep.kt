@@ -63,8 +63,12 @@ fun HistoryStep(
         "Diabetes", "Asthma", "Hypertension", "Thyroid",
         "Arthritis", "Heart Disease", "Anxiety", "Depression", "Others"
     )
+    val initialCustomCondition = profileData.chronicConditions.filter { it !in conditions && it != "Others" }.joinToString(", ")
     var selectedConditions by remember(profileData) {
-        mutableStateOf(profileData.chronicConditions.toSet())
+        mutableStateOf(
+            profileData.chronicConditions.filter { it in conditions }.toSet() +
+            if (initialCustomCondition.isNotEmpty()) setOf("Others") else emptySet()
+        )
     }
     var surgicalHistory by remember(profileData) {
         mutableStateOf(profileData.surgicalHistory)
@@ -82,7 +86,7 @@ fun HistoryStep(
         )
     }
     var customCondition by remember(profileData) {
-        mutableStateOf(profileData.chronicConditions.find { it !in conditions } ?: "")
+        mutableStateOf(initialCustomCondition)
     }
     val context = LocalContext.current
     fun validateFields(): Boolean {
@@ -112,7 +116,7 @@ fun HistoryStep(
                 Text(
                     text = stringResource(R.string.chronic_conditions_label),//"Chronic Conditions",
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.Normal,
                     color = Color.Black,
                     fontFamily = FontFamily(Font(R.font.urbanist_regular))
                 )
@@ -171,20 +175,6 @@ fun HistoryStep(
             Spacer(modifier = Modifier.height(16.dp))
             // ⭐ Custom allergy field — only if Others selected
             if ("Others" in selectedConditions) {
-                var showValues = ""
-                selectedConditions.forEach { item ->
-                    if (!selectedConditions.contains(item)) {
-                        showValues += "$item, "
-                    }
-                }
-
-                if (showValues.isNotEmpty()) {
-                    showValues = showValues.substring(0, showValues.length - 2)
-                }
-
-                LaunchedEffect(Unit) {
-                    customCondition = showValues
-                }
                 ProfileInputWithoutLabelField(
                     placeholder = stringResource(R.string.write_condition_placeholder),//"Write Condition",
                     value = customCondition,
@@ -202,7 +192,7 @@ fun HistoryStep(
             placeholder = stringResource(R.string.surgical_history_placeholder),//"Any previous surgeries or major medical procedures...",
             value = surgicalHistory,
             onValueChange = { surgicalHistory = it },
-            isBold = true
+            isBold = false
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -211,7 +201,7 @@ fun HistoryStep(
             Text(
                 text = buildLabelWithOptional(stringResource(R.string.current_medications_label)),//"Current Medications (Optional)",
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Black,
+                fontWeight = FontWeight.Normal,
                 color = Color.Black,
                 fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                 modifier = Modifier.padding(start = 12.dp, bottom = 6.dp)
@@ -339,7 +329,7 @@ fun HistoryStep(
             Text(
                 text = buildLabelWithOptional(stringResource(R.string.current_supplements_label))/*"Current Supplements (Optional)"*/,
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Black,
+                fontWeight = FontWeight.Normal,
                 color = Color.Black,
                 fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                 modifier = Modifier.padding(start = 12.dp, bottom = 6.dp)
@@ -413,7 +403,7 @@ fun HistoryStep(
                     )
 
                     if (index == 0) {
-                        // ⭐ ADD icon - first item only
+
                         Image(
                             painter = painterResource(id = R.drawable.ic_add_icon),
                             contentDescription = "Add",
@@ -470,7 +460,11 @@ fun HistoryStep(
                 if (validateFields()) {
                     val conditionsList = selectedConditions.toMutableList()
                     if ("Others" in selectedConditions && customCondition.isNotEmpty()) {
-                        conditionsList.add(customCondition)
+                        customCondition.split(Regex(",\\s*")).filter { it.isNotBlank() }.forEach {
+                            if (it !in conditionsList) {
+                                conditionsList.add(it)
+                            }
+                        }
                     }
 
                     viewModel.updateMedicalHistory(

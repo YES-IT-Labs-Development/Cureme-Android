@@ -16,6 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +47,7 @@ import com.bussiness.curemegptapp.apimodel.medication.Medication
 import com.bussiness.curemegptapp.apimodel.medication.MedicationTime
 import com.bussiness.curemegptapp.ui.component.GradientRedButton
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MedicationsCard( medication: Medication,
                      onEditClick: () -> Unit,
@@ -153,9 +161,9 @@ fun MedicationsCard( medication: Medication,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_days_name_icon),
+                            painter = painterResource(id = R.drawable.ic_sun_mon),
                             contentDescription = null,
-                            modifier = Modifier.size(29.dp),
+                            modifier = Modifier.size(29.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         medication.days.let {
@@ -178,9 +186,9 @@ fun MedicationsCard( medication: Medication,
 
                 Row{
                     Image(
-                        painter = painterResource(id = R.drawable.ic_date_health_icon),
+                        painter = painterResource(id = R.drawable.ic_clck_icon),
                         contentDescription = null,
-                        modifier = Modifier.size(29.dp),
+                        modifier = Modifier.size(29.dp)
                     )
                     Spacer(modifier = Modifier.width(9.dp))
 
@@ -311,32 +319,32 @@ fun MedicationsCard( medication: Medication,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_calender_health_icon),
+                        painter = painterResource(id = R.drawable.ic_strt_end),
                         contentDescription = null,
-                        modifier = Modifier.size(29.dp),
+                        modifier = Modifier.size(29.dp)
                     )
 
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
                         text = "${medication.startDate}",
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         color = Color.Black,
                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                         fontWeight = FontWeight.Normal
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(18.dp))
 
                     Image(
-                        painter = painterResource(id = R.drawable.ic_calender_health_icon),
+                        painter = painterResource(id = R.drawable.ic_strt_end),
                         contentDescription = null,
-                        modifier = Modifier.size(29.dp),
+                        modifier = Modifier.size(29.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
                         text = "${medication.endDate}",
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         color = Color.Black,
                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                         fontWeight = FontWeight.Normal
@@ -349,18 +357,20 @@ fun MedicationsCard( medication: Medication,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_note_health_icon),
+                        painter = painterResource(id = R.drawable.ic_dc_note),
                         contentDescription = null,
-                        modifier = Modifier.size(29.dp),
+                        modifier = Modifier.size(29.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = medication.instructions,
                         fontSize = 14.sp,
                         color = Color.Black,
                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                         fontWeight = FontWeight.Normal,
-                        lineHeight = 20.sp
+                        lineHeight = 20.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -371,10 +381,37 @@ fun MedicationsCard( medication: Medication,
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeSlotItem(
     time: String,
 ) {
+    val formattedTime = remember(time) {
+        try {
+            val cleanTime = time.trim()
+            val parsedTime = try {
+                LocalTime.parse(cleanTime, DateTimeFormatter.ofPattern("HH:mm:ss"))
+            } catch (e: Exception) {
+                try {
+                    LocalTime.parse(cleanTime, DateTimeFormatter.ofPattern("HH:mm"))
+                } catch (e2: Exception) {
+                    try {
+                        LocalTime.parse(cleanTime, DateTimeFormatter.ofPattern("hh:mm a"))
+                    } catch (e3: Exception) {
+                        try {
+                            LocalTime.parse(cleanTime, DateTimeFormatter.ofPattern("h:mm a"))
+                        } catch (e4: Exception) {
+                            null
+                        }
+                    }
+                }
+            }
+            parsedTime?.format(DateTimeFormatter.ofPattern("hh:mm a")) ?: time
+        } catch (e: Exception) {
+            time
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -385,18 +422,15 @@ fun TimeSlotItem(
                 shape = RoundedCornerShape(50.dp)
             )
             .padding(horizontal = 4.dp, vertical = 4.dp),
-            contentAlignment = Alignment.Center   // ✅ Center horizontally + vertically
+            contentAlignment = Alignment.Center
     ) {
-
         Text(
-            text = time,
+            text = formattedTime,
             fontSize = 12.sp,
             color = Color.Black,
             fontFamily = FontFamily(Font(R.font.urbanist_regular)),
             fontWeight = FontWeight.Normal
         )
-
-
     }
 }
 
@@ -424,5 +458,7 @@ fun MedicationsCardPreview() {
         id=0
     )
 
-    MedicationsCard(medication = sampleMedication, onEditClick = {}, onDeleteClick = {})
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        MedicationsCard(medication = sampleMedication, onEditClick = {}, onDeleteClick = {})
+    }
 }

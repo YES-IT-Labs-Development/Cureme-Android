@@ -55,13 +55,6 @@ fun GeneralInfoStep(
     profileData: ProfileData,
     onNext: () -> Unit
 ) {
-    var bloodGroup by remember { mutableStateOf(profileData.bloodGroup) }
-    var selectedAllergies by remember { mutableStateOf(profileData.allergies.toSet()) }
-    var customAllergy by remember { mutableStateOf("") }
-    var emergencyName by remember { mutableStateOf(profileData.emergencyContactName) }
-    var emergencyPhone by remember { mutableStateOf(profileData.emergencyContactPhone) }
-    val context = LocalContext.current
-
     val allergyOptions = listOf(
         "Drug", "Food", "Environmental", "Aspirin",
         "Latex", "Ibuprofen", "Shellfish", "Nuts",
@@ -70,6 +63,20 @@ fun GeneralInfoStep(
     val bloodOptions = listOf(
         "A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"
     )
+
+    val initialCustomAllergy = profileData.allergies.filter { it !in allergyOptions && it != "Others" }.joinToString(", ")
+    var bloodGroup by remember { mutableStateOf(profileData.bloodGroup) }
+    var customAllergy by remember { mutableStateOf(initialCustomAllergy) }
+    var selectedAllergies by remember {
+        mutableStateOf(
+            profileData.allergies.filter { it in allergyOptions }.toSet() +
+            if (initialCustomAllergy.isNotEmpty()) setOf("Others") else emptySet()
+        )
+    }
+    var emergencyName by remember { mutableStateOf(profileData.emergencyContactName) }
+    var emergencyPhone by remember { mutableStateOf(profileData.emergencyContactPhone) }
+    val context = LocalContext.current
+
     fun validateFields(): Boolean {
         if (bloodGroup.isBlank()) {
             Toast.makeText(context, "Blood group is required", Toast.LENGTH_SHORT).show()
@@ -237,7 +244,11 @@ fun GeneralInfoStep(
                 if (validateFields()) {
                     val allergiesList = selectedAllergies.toMutableList()
                     if ("Others" in selectedAllergies && customAllergy.isNotEmpty()) {
-                        allergiesList.add(customAllergy)
+                        customAllergy.split(Regex(",\\s*")).filter { it.isNotBlank() }.forEach {
+                            if (it !in allergiesList) {
+                                allergiesList.add(it)
+                            }
+                        }
                     }
 
                     viewModel.updateGeneralInfo(

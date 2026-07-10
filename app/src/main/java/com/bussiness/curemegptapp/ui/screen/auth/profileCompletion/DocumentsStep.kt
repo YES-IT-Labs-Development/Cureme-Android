@@ -105,7 +105,7 @@ fun DocumentsStep(
                 fontSize = 12.sp,
                 color = Color.Gray,
                 modifier = Modifier
-                    .padding(top = 4.dp)
+                    .padding(top = 10.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null

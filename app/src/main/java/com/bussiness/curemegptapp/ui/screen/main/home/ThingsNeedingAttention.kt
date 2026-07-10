@@ -44,27 +44,33 @@ fun ThingsNeedingAttention(
             fontWeight = FontWeight.Medium,
             color = Color.Black
         )
-        attentionItems?.let { item->
-            if (item.isNotEmpty() && item.size>3){
-                GradientButton2(
-                    text = stringResource(R.string.view_all_button),
-                    fontSize = 12.sp,
-                    paddingHorizontal = 2.dp,
-                    onClick = onViewAllClick,
-                    modifier = Modifier
-                        .width(88.dp)
-                        .height(42.dp)
-                )
-            }
+        if (!attentionItems.isNullOrEmpty()) {
+            GradientButton2(
+                text = stringResource(R.string.view_all_button),
+                fontSize = 12.sp,
+                paddingHorizontal = 2.dp,
+                onClick = onViewAllClick,
+                modifier = Modifier
+                    .width(88.dp)
+                    .height(42.dp)
+            )
         }
     }
     Spacer(modifier = Modifier.height(20.dp))
 
-    attentionItems?.let { list->
+    if (attentionItems.isNullOrEmpty()) {
+        Text(
+            text = "No attention required at the moment.",
+            fontSize = 14.sp,
+            fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+            fontWeight = FontWeight.Normal,
+            color = Color.Gray
+        )
+    } else {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            list.take(3).forEach { attention ->
+            attentionItems.take(3).forEach { attention ->
                 AttentionItem(
                     title = attention.symptoms?.get(0)?:"",
                     subtitle = attention.name?:"",

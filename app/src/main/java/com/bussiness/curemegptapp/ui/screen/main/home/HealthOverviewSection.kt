@@ -199,6 +199,8 @@ fun ProfileTab(
             Text(
                 text = name,
                 fontSize = 14.sp,
+                fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                fontWeight = FontWeight.Normal,
                 color = if (isSelected) Color.White else Color(0xFF697383)
             )
         }
@@ -346,20 +348,19 @@ fun UserHealthCard(
                             fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                             fontWeight = FontWeight.Medium
                         )
-                        if (profile?.last_appointment_days_ago != null) {
-                            val lastCheckupText = when (val days = profile.last_appointment_days_ago) {
-                                0 -> "Today"
-                                1 -> "1 day ago"
-                                else -> "$days days ago"
-                            }
-                            Text(
-                                text = stringResource(R.string.last_checkup_format, lastCheckupText),
-                                fontSize = 12.sp,
-                                color = Color(0xFF374151),
-                                fontFamily = FontFamily(Font(R.font.urbanist_medium)),
-                                fontWeight = FontWeight.Medium
-                            )
+                        val lastCheckupDays = profile?.last_appointment_days_ago ?: 0
+                        val lastCheckupText = when (lastCheckupDays) {
+                            0 -> "0 days ago"
+                            1 -> "1 day ago"
+                            else -> "$lastCheckupDays days ago"
                         }
+                        Text(
+                            text = stringResource(R.string.last_checkup_format, lastCheckupText),
+                            fontSize = 12.sp,
+                            color = Color(0xFF374151),
+                            fontFamily = FontFamily(Font(R.font.urbanist_medium)),
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
 

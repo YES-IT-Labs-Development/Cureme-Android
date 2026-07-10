@@ -104,17 +104,20 @@ fun AddMedicationScreen(
     var selectFrequency by remember { mutableStateOf("Select Frequency") }
     var selectedDays by remember { mutableStateOf(setOf<String>()) }
     var selectDayName by remember { mutableStateOf("Select Frequency") }
+
     LaunchedEffect(selectedDays) {
         selectDayName = if (selectedDays.isEmpty()) "" else selectedDays.joinToString(", ")
     }
+
     val myselfOptions by viewModel.memberOption.collectAsState()
-    val selectedMedicationTypeOptions =
-        listOf("Medicine", "Supplements")
+
+    val selectedMedicationTypeOptions = listOf("Medicine", "Supplements")
+
     val selectDayNameOptions =
-        listOf(   "Sunday",
-            "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday") // Added example options
-    val selectFrequencyOptions =
-        listOf("Daily", "Alternate", "Weekly") // Added example options
+        listOf(   "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday") // Added example options
+
+    val selectFrequencyOptions = listOf("Daily", "Alternate", "Weekly") // Added example options
+
     var selectedMedicationType by remember { mutableStateOf("Select Medication Type") }
     var description by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
@@ -383,6 +386,7 @@ fun AddMedicationScreen(
             CustomPowerSpinner(
                 selectedText = selectedMyself,
                 onSelectionChanged = { reason ->
+                    selectedMyself = reason
                     viewModel.updateForWhomId(reason)
                 },
                 horizontalPadding = 24.dp,
@@ -495,11 +499,11 @@ fun AddMedicationScreen(
 
                 Spacer(Modifier.height(8.dp))
 
-                CustomMultiSelectPowerSpinner(
-                    selectedText = if (selectDayName.isBlank()) "Select Day" else selectDayName,
-                    selectedValues = selectedDays,
-                    onSelectionChanged = { newSelection ->
-                        selectedDays = newSelection
+                CustomPowerSpinner(
+                    selectedText = if (selectDayName.isBlank() || selectDayName == "Select Frequency") "Select Day" else selectDayName,
+                    onSelectionChanged = { reason ->
+                        selectDayName = reason
+                        selectedDays = setOf(reason)
                     },
                     horizontalPadding = 24.dp,
                     reasons = selectDayNameOptions
@@ -773,11 +777,17 @@ fun AddMedicationScreen(
 
 
     if (showDialogSuccessFully) {
-        SuccessfulDialog(title = stringResource(R.string.medication_added_success_title)/*"Medication Added \nSuccessfully"*/, description = stringResource(R.string.medication_added_success_description)/*"Your medication has been saved and reminders are set."*/,
-            onDismiss = { showDialogSuccessFully = false
-                navController.navigateUp()},
-            onOkClick = { showDialogSuccessFully = false
-                navController.navigateUp()}
+        SuccessfulDialog(
+            title = "Medication Added\nSuccessfully",
+            description = "Your medication has been saved and reminders are set.",
+            onDismiss = {
+                showDialogSuccessFully = false
+                navController.navigateUp()
+            },
+            onOkClick = {
+                showDialogSuccessFully = false
+                navController.navigateUp()
+            }
         )
     }
 

@@ -188,9 +188,18 @@ fun OpenChatScreen(
         onClose = { showDrawer = false },
         drawerWidth = 320.dp,
         drawerContent = {
+            val drawerSelectedUser = selectedUser?.let { member ->
+                val isMyself = member.relationship?.trim()?.equals("myself", ignoreCase = true) == true
+                if (isMyself) {
+                    "${member.name} (Myself)"
+                } else {
+                    member.name
+                }
+            } ?: ""
+
             MenuDrawer(
                 onDismiss = { showDrawer = false },
-                selectedUser = selectedUser?.name ?: "",
+                selectedUser = drawerSelectedUser,
                 onUserChange = { user ->
                     val hasMyself =
                         user?.relationship?.contains("Myself", ignoreCase = true) ?: false
@@ -266,6 +275,7 @@ fun OpenChatScreen(
                     .statusBarsPadding()
                     .padding(horizontal = 20.dp)
             ) {
+                Spacer(modifier = Modifier.height(12.dp))
 
                 AIChatHeader(
                     logoRes = R.drawable.ic_logo,
@@ -314,14 +324,10 @@ fun OpenChatScreen(
 
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                val gradient = Brush.linearGradient(
-                                    colors = AppGradientColors
-                                )
-
-                                val greetingText = remember(selectedUser?.name ?: "") {
+                                val greetingText = remember(selectedUser?.name ?: "", greeting) {
                                     buildAnnotatedString {
-                                        append("Good afternoon, ")
-                                        withStyle(SpanStyle(brush = gradient)) {
+                                        append("$greeting, ")
+                                        withStyle(SpanStyle(color = Color(0xFF4338CA))) {
                                             append(selectedUser?.name ?: "")
                                         }
                                     }
@@ -386,7 +392,8 @@ fun OpenChatScreen(
                                             Text(
                                                 text = "Ask for:",
                                                 fontWeight = FontWeight.Medium,
-                                                fontSize = 16.sp
+                                                fontSize = 16.sp,
+                                                fontFamily = FontFamily(Font(R.font.urbanist_medium))
                                             )
                                         }
 

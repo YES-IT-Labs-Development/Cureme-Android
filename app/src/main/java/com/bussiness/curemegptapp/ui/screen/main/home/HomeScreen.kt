@@ -71,10 +71,11 @@ fun HomeScreen(
     }
 
 
-//    LaunchedEffect(Unit) {
-//        delay(5000)
-//        showAlertDialog2 = true
-//    }
+    // Commented out the auto reminder triggers as requested
+    /*LaunchedEffect(Unit) {
+        delay(5000)
+        showAlertDialog2 = true
+    }*/
 
     if (showAlertDialog2) {
         AlertCardDialog(
@@ -160,7 +161,7 @@ fun HomeScreen(
         HomeHeader(
             logoRes = R.drawable.ic_logo,
             notificationRes = R.drawable.ic_notification_home_icon,
-            profileRes = R.drawable.ic_profile_image,
+            profileRes = R.drawable.user_not_found,
             profileImageUrl = profileImageUrl,
             onClick = {
                 navController.navigate(AppDestination.MyProfileScreen)
@@ -254,9 +255,9 @@ fun HomeScreen(
                 RecommendedSteps(steps = uiStateHome?.recommended_next_steps)
             }
 
+            Spacer(modifier = Modifier.height(28.dp))
 
-
-                ThingsNeedingAttention(
+            ThingsNeedingAttention(
 
                     attentionItems = uiStateHome?.needAttentionList,
 

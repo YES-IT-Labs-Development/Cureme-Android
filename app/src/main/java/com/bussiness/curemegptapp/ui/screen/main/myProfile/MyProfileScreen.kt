@@ -412,7 +412,7 @@ fun ProfileContent(
                                  member.profileImage == "https://curemegpt.tgastaging.com"){
                             Log.d("PROFILE_IMAGE", member.profileImage)
                             Image(
-                                    painter = painterResource(id = R.drawable.ic_profile_image),
+                                    painter = painterResource(id = R.drawable.user_not_found),
                             contentDescription = stringResource(R.string.profile_photo_description, member.name),
                             modifier = Modifier
                                 .fillMaxSize()

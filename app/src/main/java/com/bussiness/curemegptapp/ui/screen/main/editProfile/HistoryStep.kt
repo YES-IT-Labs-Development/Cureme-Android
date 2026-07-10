@@ -82,9 +82,10 @@ fun HistoryStep(
 
 
     LaunchedEffect(profileState) {
-        selectedConditions = profileState.chronicConditions.toSet()
-        customCondition =
-            profileState.chronicConditions.find { it !in conditions } ?: ""
+        val initialCustomCondition = profileState.chronicConditions.filter { it !in conditions && it != "Others" }.joinToString(", ")
+        customCondition = initialCustomCondition
+        selectedConditions = profileState.chronicConditions.filter { it in conditions }.toSet() +
+            if (initialCustomCondition.isNotEmpty()) setOf("Others") else emptySet()
         surgicalHistory = profileState.surgicalHistory
         currentMedications =
             if (profileState.currentMedications.isNotEmpty()) profileState.currentMedications
@@ -125,7 +126,7 @@ fun HistoryStep(
                 Text(
                     text = stringResource(R.string.chronic_conditions_label),
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.Normal,
                     color = Color.Black,
                     fontFamily = FontFamily(Font(R.font.urbanist_regular))
                 )
@@ -134,7 +135,7 @@ fun HistoryStep(
                     color = Color.Red,
                     fontSize = 15.sp,
                     fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                    fontWeight = FontWeight.Black
+                    fontWeight = FontWeight.Normal
                 )
             }
 
@@ -184,21 +185,6 @@ fun HistoryStep(
             Spacer(modifier = Modifier.height(16.dp))
 
             if ("Others" in selectedConditions) {
-
-                var showValues = ""
-                selectedConditions.forEach { item ->
-                    if (!selectedConditions.contains(item)) {
-                        showValues += "$item, "
-                    }
-                }
-
-                if (showValues.isNotEmpty()) {
-                    showValues = showValues.substring(0, showValues.length - 2)
-                }
-
-                LaunchedEffect(Unit) {
-                    customCondition = showValues
-                }
                 ProfileInputWithoutLabelField(
                     placeholder = stringResource(R.string.write_condition_placeholder),
                     value = customCondition,
@@ -216,7 +202,7 @@ fun HistoryStep(
             placeholder = stringResource(R.string.surgical_history_placeholder),
             value = surgicalHistory,
             onValueChange = { surgicalHistory = it },
-            isBold = true
+            isBold = false
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -226,7 +212,7 @@ fun HistoryStep(
             Text(
                 text = buildLabelWithOptional(stringResource(R.string.current_medications_label)),
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Black,
+                fontWeight = FontWeight.Normal,
                 color = Color.Black,
                 fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                 modifier = Modifier.padding(start = 12.dp, bottom = 6.dp)
@@ -326,7 +312,7 @@ fun HistoryStep(
             Text(
                 text = buildLabelWithOptional(stringResource(R.string.current_supplements_label)),
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Black,
+                fontWeight = FontWeight.Normal,
                 color = Color.Black,
                 fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                 modifier = Modifier.padding(start = 12.dp, bottom = 6.dp)
@@ -429,7 +415,11 @@ fun HistoryStep(
                 if (validateFields()) {
                     val conditionsList = selectedConditions.toMutableList()
                     if ("Others" in selectedConditions && customCondition.isNotEmpty()) {
-                        conditionsList.add(customCondition)
+                        customCondition.split(Regex(",\\s*")).filter { it.isNotBlank() }.forEach {
+                            if (it !in conditionsList) {
+                                conditionsList.add(it)
+                            }
+                        }
                     }
 
                     viewModel.updateMedicalHistory(

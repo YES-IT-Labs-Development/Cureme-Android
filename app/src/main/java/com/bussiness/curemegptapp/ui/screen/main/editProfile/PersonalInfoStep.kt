@@ -343,6 +343,23 @@ fun PersonalInfoStep(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Row(modifier = Modifier.padding(horizontal = 9.dp)) {
+            Text(
+                text = stringResource(R.string.gender_label),
+                color = Color.Black,
+                fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.padding(start = 3.dp, bottom = 6.dp)
+            )
+            Text(
+                text = " *",
+                color = Color.Red,
+                fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+        }
+
         Row(modifier = Modifier.padding(horizontal = 7.dp)) {
             CustomPowerSpinner(
                 selectedText = profile.gender,

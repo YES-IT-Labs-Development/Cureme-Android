@@ -557,4 +557,10 @@ interface ApiService {
       suspend fun viewSummaryRequest(
           @Field("chat_id") chatId: String
       ) : Response<com.bussiness.curemegptapp.apimodel.chatModel.SummaryResponse>
+
+      @POST("delete_account")
+      @FormUrlEncoded
+      suspend fun deleteAccountRequest(
+          @Field("delete_account_feedback") feedback: String
+      ) : Response<GsonJsonObject>
 }

@@ -48,9 +48,20 @@ import com.bussiness.curemegptapp.navigation.AppDestination
 import com.bussiness.curemegptapp.ui.component.GradientButton
 import com.bussiness.curemegptapp.ui.component.TopBarHeader2
 import com.bussiness.curemegptapp.ui.dialog.LogOutDialog
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.bussiness.curemegptapp.viewmodel.setting.SettingsViewModel
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import com.bussiness.curemegptapp.util.SessionManager
 
 @Composable
-fun DeleteAccountScreen(navController: NavHostController, authNavController: NavController) {
+fun DeleteAccountScreen(
+    navController: NavHostController,
+    authNavController: NavController,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
     var selectedReason by remember { mutableStateOf<String?>(null) }
     Column(
         modifier = Modifier
@@ -71,11 +82,21 @@ fun DeleteAccountScreen(navController: NavHostController, authNavController: Nav
             )
         } else {
             // --------- IF selectedReason != null → IMAGE-2 SCREEN ---------
-            DeleteAccountFeedbackUI(selectedReason!!, onDeleteClick = {
-                // navController.navigate()
-                authNavController.navigate(AppDestination.Login) {
-                    popUpTo(AppDestination.MainScreen) { inclusive = true }
-                }
+            DeleteAccountFeedbackUI(selectedReason!!, onDeleteClick = { feedbackText ->
+                val feedbackBody = if (feedbackText.trim().isEmpty()) selectedReason!! else "$selectedReason - $feedbackText"
+                viewModel.deleteAccount(
+                    feedback = feedbackBody,
+                    onSuccess = {
+                        Toast.makeText(context, "Account deleted successfully", Toast.LENGTH_SHORT).show()
+                        sessionManager.clearSession()
+                        authNavController.navigate(AppDestination.Login) {
+                            popUpTo(AppDestination.MainScreen) { inclusive = true }
+                        }
+                    },
+                    onError = { msg ->
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                    }
+                )
             })
         }
     }
@@ -166,8 +187,9 @@ fun DeleteAccountOptionsUI(onReasonSelected: (String) -> Unit) {
 }
 
 @Composable
-fun DeleteAccountFeedbackUI(selectedReason: String, onDeleteClick: () -> Unit) {
+fun DeleteAccountFeedbackUI(selectedReason: String, onDeleteClick: (String) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
+    var feedback by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -200,11 +222,6 @@ fun DeleteAccountFeedbackUI(selectedReason: String, onDeleteClick: () -> Unit) {
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        var feedback by remember { mutableStateOf("") }
-
-
-
 
         TextField(
             value = feedback,
@@ -256,7 +273,7 @@ fun DeleteAccountFeedbackUI(selectedReason: String, onDeleteClick: () -> Unit) {
             },
             onConfirm = {
                 showDialog = false
-                onDeleteClick()
+                onDeleteClick(feedback)
             }
         )
     }

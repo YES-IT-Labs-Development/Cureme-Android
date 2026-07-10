@@ -79,4 +79,26 @@ class SettingsViewModel @Inject constructor(
             }
         }
     }
+
+    fun deleteAccount(feedback: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            LoaderManager.show()
+            repository.deleteAccount(feedback).collectLatest { result ->
+                when (result) {
+                    is NetworkResult.Success -> {
+                        LoaderManager.hide()
+                        onSuccess()
+                    }
+                    is NetworkResult.Error -> {
+                        LoaderManager.hide()
+                        onError(result.message ?: "Failed to delete account")
+                    }
+                    is NetworkResult.Loading -> {
+                        // Managed by manual LoaderManager.show()
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
 }

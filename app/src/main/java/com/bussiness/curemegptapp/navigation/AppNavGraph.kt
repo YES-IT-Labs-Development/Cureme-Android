@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import androidx.navigation.navArgument
 import com.bussiness.curemegptapp.ui.screen.auth.CreateAccountScreen
 import com.bussiness.curemegptapp.ui.screen.auth.LoginScreen
@@ -87,7 +88,10 @@ fun AppNavGraph(navController: NavHostController,modifier : Modifier = Modifier)
 
 
             composable<AppDestination.CreateAccount> { CreateAccountScreen(navController) }
-            composable<AppDestination.PrivacyConsent> { PrivacyConsentScreen(navController) }
+            composable<AppDestination.PrivacyConsent> { backStackEntry ->
+                val route = backStackEntry.toRoute<AppDestination.PrivacyConsent>()
+                PrivacyConsentScreen(navController, route.fromScreen)
+            }
             composable<AppDestination.PrivacyPolicyScreen> { PrivacyPolicyScreen(navController) }
             composable<AppDestination.TermsAndConditionsScreen> { TermsAndConditionsScreen(navController) }
 

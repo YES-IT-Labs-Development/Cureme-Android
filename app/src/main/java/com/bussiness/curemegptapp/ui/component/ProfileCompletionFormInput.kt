@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.foundation.text.KeyboardActions
@@ -93,7 +95,7 @@ fun ProfileInputField(
                 text = buildLabelWithOptional(label),
                 fontSize = 15.sp,
                 fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                fontWeight = if(!isBold) FontWeight.Normal else FontWeight.Black,
+                fontWeight = FontWeight.Normal,
                 color = Color.Black,
                 modifier = Modifier.padding(start = 12.dp, bottom = 6.dp)
             )
@@ -109,18 +111,10 @@ fun ProfileInputField(
         }
 
         // 🔹 TextField
-        TextField(
+        BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    color = Color(0xFFB8B9BD),
-                    fontSize = 15.sp,
-                    fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                    fontWeight = FontWeight.Normal,
-                )
-            },
+            enabled = enable,
             textStyle = TextStyle(
                 color = Color.Black,
                 fontSize = 13.sp,
@@ -133,43 +127,51 @@ fun ProfileInputField(
                 .height(56.dp)
                 .padding(horizontal = 8.dp)
                 .clip(shape)
-                .border(1.dp, Color(0xFF697383), shape),
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color(0xFFB8B9BD),
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            enabled = enable,
-            trailingIcon = if (showVerifyBadge) {
-                {
-                    Log.d("TESTING_BADGE", "Showing verify badge for $label")
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 12.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0xFF4CAF50))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                            .clickable(interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) { onVerifyClick() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "VERIFY",
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily(Font(R.font.urbanist_medium)),
-                            fontWeight = FontWeight.Bold
-                        )
+                .border(1.dp, Color(0xFF697383), shape)
+                .background(Color.White),
+            decorationBox = { innerTextField ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                        if (value.isEmpty()) {
+                            Text(
+                                text = placeholder,
+                                color = Color(0xFFB8B9BD),
+                                fontSize = 13.sp,
+                                fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                                fontWeight = FontWeight.Normal,
+                            )
+                        }
+                        innerTextField()
+                    }
+                    if (showVerifyBadge) {
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 12.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFF4CAF50))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .clickable(interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) { onVerifyClick() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "VERIFY",
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                fontFamily = FontFamily(Font(R.font.urbanist_medium)),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
-            } else {
-                null
-            }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
         )
     }
 }
@@ -273,7 +275,7 @@ fun ProfileInputMultipleLineField(
                 fontSize = 15.sp,
                 color = Color.Black,
                 fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                fontWeight = if(!isBold)FontWeight.Normal else FontWeight.Black,
+                fontWeight = FontWeight.Normal,
                 modifier = Modifier.padding(start = 12.dp, bottom = 6.dp)
             )
             if (isImportant) {
@@ -288,18 +290,9 @@ fun ProfileInputMultipleLineField(
         }
 
         // 🔹 TextField
-        TextField(
+        BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    color = Color(0xFFB8B9BD),
-                    fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 13.sp
-                )
-            },
             textStyle = TextStyle(
                 color = Color.Black,
                 fontSize = 13.sp,
@@ -311,17 +304,26 @@ fun ProfileInputMultipleLineField(
                 .height(90.dp)
                 .padding(horizontal = 8.dp)
                 .clip(shape)
-                .border(1.dp, Color(0xFFC3C6CB), shape),
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color(0xFFB8B9BD),
-                disabledTextColor = Color.Gray,
-                cursorColor = Color.Black
-            ),
+                .border(1.dp, Color(0xFFC3C6CB), shape)
+                .background(Color.White),
+            decorationBox = { innerTextField ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    if (value.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            color = Color(0xFFB8B9BD),
+                            fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 13.sp
+                        )
+                    }
+                    innerTextField()
+                }
+            },
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
         )
     }
@@ -736,26 +738,52 @@ fun StepTabs(
             ) {
 
                 // Circle with icon
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isSelected) Color(0xFF3D35EC) else if (isSelectedPrevious) Color(
-                                0xFF2D2587
-                            )
-                            else Color(0xFFF2F2F2)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val iconRes = if (isSelected) step.selectedIcon else step.icon
-                    val isCustomGeneralIcon = iconRes == R.drawable.ic_gnrl_icn
+                val iconRes = if (isSelected) {
+                    step.selectedIcon
+                } else if (index == selectedIndex) {
+                    step.icon
+                } else {
+                    if (step.icon == R.drawable.ic_histry) {
+                        R.drawable.ic_fad_histrory
+                    } else if (step.icon == R.drawable.ic_docum) {
+                        R.drawable.ic_fad_doc
+                    } else {
+                        step.icon
+                    }
+                }
+                val isCustomGeneralIcon = iconRes == R.drawable.ic_gnrl_icn
+                val isHistoryOrDoc = (
+                    iconRes == R.drawable.ic_histry ||
+                    iconRes == R.drawable.ic_docum ||
+                    iconRes == R.drawable.ic_fad_histrory ||
+                    iconRes == R.drawable.ic_fad_doc
+                )
+
+                if (isHistoryOrDoc) {
                     Image(
                         painter = painterResource(id = iconRes),
                         contentDescription = step.title,
-                        //  tint = if (isSelected) Color.White else Color(0xFFD0D0D0),
-                        modifier = if (isCustomGeneralIcon) Modifier.size(24.dp) else Modifier.size(42.dp)
+                        modifier = Modifier.size(42.dp)
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) Color(0xFF3D35EC) else if (isSelectedPrevious) Color(
+                                    0xFF2D2587
+                                )
+                                else Color(0xFFF2F2F2)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = iconRes),
+                            contentDescription = step.title,
+                            modifier = if (isCustomGeneralIcon) Modifier.size(24.dp) else Modifier.size(42.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -850,8 +878,8 @@ fun TopBarHeader(
         val steps = listOf(
             StepItem("Personal", R.drawable.ic_person_complete_icon, R.drawable.ic_check),
             StepItem("General", R.drawable.ic_gnrl_icn, R.drawable.ic_check),
-            StepItem("History", R.drawable.ic_history_complete_icon, R.drawable.ic_check),
-            StepItem("Documents", R.drawable.ic_documents_complete_icon, R.drawable.ic_check)
+            StepItem("History", R.drawable.ic_histry, R.drawable.ic_check),
+            StepItem("Documents", R.drawable.ic_docum, R.drawable.ic_check)
         )
 
         StepTabs(
@@ -897,7 +925,7 @@ fun ProfilePhotoPicker(
                         cornerRadius = CornerRadius(40.dp.toPx(), 40.dp.toPx())
                     )
                 }
-                .padding(horizontal = 5.dp),
+                .padding(horizontal = 20.dp),
             contentAlignment = Alignment.CenterStart
         ) {
 
@@ -1162,7 +1190,7 @@ fun UniversalInputField(
 @Composable
 fun CancelButton(
     cancelText: String = "Cancel",
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.width(120.dp).height(45.dp),
     paddingHorizontal: Dp = 18.dp,
     fontSize: TextUnit = 14.sp,
     fontFamily: FontFamily = FontFamily(Font(R.font.onest_medium)),
@@ -1171,8 +1199,6 @@ fun CancelButton(
 
     Box(
         modifier = modifier
-            .width(120.dp)
-            .height(45.dp)
             .clip(RoundedCornerShape(28.dp))
             .border(
                 1.dp,

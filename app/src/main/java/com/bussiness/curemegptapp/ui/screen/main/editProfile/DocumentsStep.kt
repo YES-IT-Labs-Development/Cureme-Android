@@ -111,6 +111,7 @@ fun DocumentsStep(
                 label = stringResource(R.string.upload_files_label),
                 fileName = if (files.isEmpty()) stringResource(R.string.no_file_chosen)
                 else "${files.size} ${stringResource(R.string.files_selected)}",
+                buttonBgResId = R.drawable.ic_bg_button_blue,
                 onChooseClick = {
                     filePickerLauncher.launch(
                         arrayOf(
@@ -127,7 +128,7 @@ fun DocumentsStep(
                 fontSize = 12.sp,
                 color = Color.Gray,
                 modifier = Modifier
-                    .padding(top = 4.dp)
+                    .padding(top = 10.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null

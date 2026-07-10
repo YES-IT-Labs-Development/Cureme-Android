@@ -424,10 +424,11 @@ fun HealthScheduleScreen(
                 R.string.add_medication_button
             ),
             icon = R.drawable.ic_plus_normal_icon,
-            width = if (selectedTab == 0) 145.dp else 170.dp,
+            width = if (selectedTab == 0) 145.dp else 190.dp,
             height = 52.dp,
             fontSize = 15.sp,
             imageSize = 20.dp,
+            horizontalPadding = 8.dp,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(horizontal = 15.dp, vertical = 30.dp),
