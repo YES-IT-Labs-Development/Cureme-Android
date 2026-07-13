@@ -73,7 +73,7 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
         )
 
 
-        val priority = "Attention"
+        val priority = (state?.severity ?: "Normal").replaceFirstChar { it.uppercase() }
 
         TopBarHeader2(title = stringResource(R.string.back_to_reports)/*"Back to Reports"*/, onBackClick = {navController.navigateUp()})
 
@@ -121,12 +121,13 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
                     Spacer(modifier = Modifier.height(10.dp))
 
 
+                    val isHigh = priority.equals("Attention", ignoreCase = true) || priority.equals("High", ignoreCase = true)
                     PriorityImageTag(
                         label = priority,
-                        color = if (priority == "Attention") Color(0xFFF31D1D) else Color(0xFF19BB9B),
-                        backgroundColor = if (priority == "Attention") Color(0xFFF6DFE6) else Color(0xFFD3ECEC),
-                        borderColor = if (priority == "Attention") Color(0xFFF31D1D) else Color(0xFF19BB9B),
-                        icon = if (priority == "Attention") R.drawable.ic_attention_icon_red else R.drawable.ic_normal_icon_green
+                        color = if (isHigh) Color(0xFFF31D1D) else Color(0xFF19BB9B),
+                        backgroundColor = if (isHigh) Color(0xFFF6DFE6) else Color(0xFFD3ECEC),
+                        borderColor = if (isHigh) Color(0xFFF31D1D) else Color(0xFF19BB9B),
+                        icon = if (isHigh) R.drawable.ic_attention_icon_red else R.drawable.ic_normal_icon_green
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))

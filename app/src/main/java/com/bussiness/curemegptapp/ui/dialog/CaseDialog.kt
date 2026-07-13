@@ -38,7 +38,7 @@ import com.bussiness.curemegptapp.ui.component.GradientButton1
 
 
 @Composable
-fun CaseDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+fun CaseDialog(userName: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     Dialog(
         onDismissRequest = onDismiss, properties = DialogProperties(
             dismissOnClickOutside = false, // 🔴 IMPORTANT
@@ -94,7 +94,7 @@ fun CaseDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    "This new case chat will be created only for Rose Logan (Spouse). Once created, you cannot switch members in the middle. The full case history will be saved in Rose Logan (Spouse)'s records.",
+                    "This new case chat will be created only for $userName. Once created, you cannot switch members in the middle. The full case history will be saved in $userName's records.",
                     fontSize = 13.sp,
                     color = Color(0xFF050505),
                     fontFamily = FontFamily(Font(R.font.urbanist_regular)),

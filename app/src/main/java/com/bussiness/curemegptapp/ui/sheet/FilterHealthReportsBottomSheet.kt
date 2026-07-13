@@ -210,7 +210,9 @@ fun FilterHealthReportsBottomSheet(
                 selectedMember = reason
             },
             horizontalPadding = 24.dp,
-            reasons = combinedMemberOptions
+            reasons = combinedMemberOptions,
+            fontSize = 16.sp,
+            dropdownFontSize = 16.sp
         )
 
         Spacer(modifier = Modifier.height(19.dp))

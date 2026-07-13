@@ -201,6 +201,7 @@ fun OpenChatScreen(
                 onDismiss = { showDrawer = false },
                 selectedUser = drawerSelectedUser,
                 onUserChange = { user ->
+                    selectedUser = user
                     val hasMyself =
                         user?.relationship?.contains("Myself", ignoreCase = true) ?: false
                     if (!hasMyself) {
@@ -408,6 +409,7 @@ fun OpenChatScreen(
                                                 color = Color(0xFF5B47DB),
                                                 fontSize = 14.sp,
                                                 fontWeight = FontWeight.Medium,
+                                                fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
                                                 modifier = Modifier.weight(1f, fill = false),
@@ -447,7 +449,10 @@ fun OpenChatScreen(
                                                         horizontalArrangement = Arrangement.SpaceBetween,
                                                         modifier = Modifier.fillMaxWidth()
                                                     ) {
-                                                        Text(text = "${user.name} (${user.relationship})")
+                                                        Text(
+                                                            text = "${user.name} (${user.relationship})",
+                                                            fontFamily = FontFamily(Font(R.font.urbanist_regular))
+                                                        )
                                                         if (user == selectedUser) {
                                                             Image(
                                                                 painter = painterResource(R.drawable.ic_tick_icon),
@@ -532,7 +537,18 @@ fun OpenChatScreen(
             }
 
             if (showCaseDialog) {
+                val currentUserName = selectedUser?.let { member ->
+                    val relation = member.relationship?.trim()
+                    if (relation.isNullOrEmpty()) {
+                        member.name
+                    } else {
+                        val formattedRelation = if (relation.equals("myself", ignoreCase = true)) "Myself" else relation
+                        "${member.name} ($formattedRelation)"
+                    }
+                } ?: ""
+
                 CaseDialog(
+                    userName = currentUserName,
                     onDismiss = { showCaseDialog = false },
                     onConfirm = {
                         val handle = navController.currentBackStackEntry?.savedStateHandle

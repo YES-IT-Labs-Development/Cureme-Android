@@ -74,9 +74,9 @@ fun ChatDataScreen(
     val context = LocalContext.current
     var showRenameSheet by remember { mutableStateOf(false) }
     var chatToRename by remember { mutableStateOf<Pair<String, String>?>(null) }
-    val selectedMember = familyList.find { it.id == familyMemberId } ?: familyList.find {
-        it.relationship.equals("myself", ignoreCase = true)
-    }
+    
+    
+    
 
     val chatHistoryList by viewModel.historyChatList.collectAsState()
 
@@ -110,6 +110,9 @@ fun ChatDataScreen(
     val messages by viewModel.messages.collectAsState()
     val chatArgs by viewModel.chatArgs.collectAsState()
     val listState = rememberLazyListState()
+    val selectedMember = chatArgs.familyList.find { it.id == chatArgs.familyMemberId } ?: chatArgs.familyList.find {
+        it.relationship.equals("myself", ignoreCase = true)
+    }
     var showSwitchDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
@@ -167,6 +170,7 @@ fun ChatDataScreen(
                     selectedUser = user.name
                     val hasMyself =
                         user.relationship?.contains("Myself", ignoreCase = true) ?: false
+                    viewModel.switchFamilyMember(context, if (hasMyself) 0 else user.id)
                     if (!hasMyself) {
                         viewModel.getUserFamilyChatList(user.id)
                     } else {
@@ -179,8 +183,8 @@ fun ChatDataScreen(
                 },
                 familyList = familyList,
                 chatHistory = chatHistoryList,   // mutableListOf() ki jagah actual list
-                onRenameClick = { id, newName ->
-                    chatToRename = id to newName
+                onRenameClick = {
+                    id, newName -> chatToRename = id to newName
                     showRenameSheet = true
                 },
                 onShareClick = {
@@ -314,8 +318,10 @@ fun ChatDataScreen(
                             },
                         state = uiState,
                         viewModel = viewModel,
-                        familyList, familyMemberId
+                        familyList = chatArgs.familyList,
+                        familyMemberId = chatArgs.familyMemberId
                     )
+
                 }
             }
         }

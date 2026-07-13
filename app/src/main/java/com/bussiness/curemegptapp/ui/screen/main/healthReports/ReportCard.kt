@@ -124,12 +124,13 @@ fun ReportCard(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 // ---------- PRIORITY TAG ----------
+                val isHigh = priority.equals("Attention", ignoreCase = true) || priority.equals("High", ignoreCase = true)
                 PriorityImageTag(
                     label = priority,
-                    color = if (priority == "Attention") Color(0xFFF31D1D) else Color(0xFF19BB9B),
-                    backgroundColor = if (priority == "Attention") Color(0xFFF6DFE6) else Color(0xFFD3ECEC),
-                    borderColor = if (priority == "Attention") Color(0xFFF31D1D) else Color(0xFF19BB9B),
-                    icon = if (priority == "Attention") R.drawable.ic_attention_icon_red else R.drawable.ic_normal_icon_green
+                    color = if (isHigh) Color(0xFFF31D1D) else Color(0xFF19BB9B),
+                    backgroundColor = if (isHigh) Color(0xFFF6DFE6) else Color(0xFFD3ECEC),
+                    borderColor = if (isHigh) Color(0xFFF31D1D) else Color(0xFF19BB9B),
+                    icon = if (isHigh) R.drawable.ic_attention_icon_red else R.drawable.ic_normal_icon_green
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))

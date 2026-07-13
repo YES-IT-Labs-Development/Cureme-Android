@@ -41,6 +41,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -99,8 +101,6 @@ fun BottomMessageBar2(
 
     val chatArgs by viewModel.chatArgs.collectAsState()
 
-    val familyMemberId = chatArgs.familyMemberId
-    val familyList = chatArgs.familyList
     val isCaseChat = chatArgs.type == "case"
     val selectedMember = familyList.find { it.id == familyMemberId } ?: familyList.find {
         it.relationship.equals("myself", ignoreCase = true)
@@ -330,10 +330,11 @@ fun BottomMessageBar2(
                                 } ?: "Select User"
 
                                 Text(
-                                    displayName,
+                                    text = displayName,
                                     color = if (isCaseChat) Color.Gray else Color(0xFF5B47DB),
                                     fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    fontFamily = FontFamily(Font(R.font.urbanist_medium))
                                 )
 
                                 if (!isCaseChat) {
@@ -481,11 +482,10 @@ fun BottomMessageBar2(
 
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()/*.padding(horizontal = 5.dp)*/
-                        .padding(start = 10.dp, end = 5.dp, bottom = 8.dp),
+                        .fillMaxWidth()
+                        .padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Spacer(modifier = Modifier.width(5.dp))
                     // Rounded text box
 
                     val attachIconAlignment =
@@ -623,40 +623,39 @@ fun BottomMessageBar2(
                                 }
 
 
-                                TextField(
-                                    // value = textInput + voiceText,
+                                BasicTextField(
                                     value = state.message,
                                     onValueChange = {
                                         viewModel.onMessageChange(it)
-                                        // textInput = it
                                         recognizedText = ""
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .focusRequester(focusRequester),
+                                        .focusRequester(focusRequester)
+                                        .padding(vertical = 12.dp),
                                     textStyle = TextStyle(
                                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                                         fontSize = 13.sp,
                                         color = Color.Black
                                     ),
-                                    placeholder = {
-                                        Text(
-                                            "Ask anything…",
-                                            fontSize = 12.sp,
-                                            color = Color(0xFF949494),
-                                            fontFamily = FontFamily(Font(R.font.urbanist_regular))
-                                        )
-                                    },
                                     maxLines = 4,
-                                    colors = TextFieldDefaults.colors(
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent,
-                                        focusedContainerColor = Color.Transparent,
-                                        unfocusedContainerColor = Color.Transparent,
-                                        focusedTextColor = Color.Black,
-                                        unfocusedTextColor = Color.Black,
-                                        cursorColor = Color.Black
-                                    )
+                                    cursorBrush = SolidColor(Color.Black),
+                                    decorationBox = { innerTextField ->
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            contentAlignment = Alignment.CenterStart
+                                        ) {
+                                            if (state.message.isEmpty()) {
+                                                Text(
+                                                    "Ask anything…",
+                                                    fontSize = 12.sp,
+                                                    color = Color(0xFF949494),
+                                                    fontFamily = FontFamily(Font(R.font.urbanist_regular))
+                                                )
+                                            }
+                                            innerTextField()
+                                        }
+                                    }
                                 )
                             }
                         }

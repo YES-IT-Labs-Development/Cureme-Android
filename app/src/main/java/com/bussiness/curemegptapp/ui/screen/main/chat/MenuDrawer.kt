@@ -281,6 +281,99 @@ fun MenuDrawer(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Chat History Selector Button with Dropdown Icon
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(interactionSource = remember { MutableInteractionSource() },
+                                indication = null) { showCategoryDropdown = !showCategoryDropdown }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val categoryLabel = if (selectedCategory == "normal") {
+                            stringResource(R.string.chat_history_title)
+                        } else {
+                            stringResource(R.string.case_chat_history_title)
+                        }
+                        Text(
+                            text = categoryLabel,
+                            fontSize = 20.sp,
+                            fontFamily = FontFamily(Font(R.font.urbanist_semibold)),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Icon(
+                            painter = painterResource(if (showCategoryDropdown) R.drawable.ic_dropdown_show else R.drawable.ic_dropdown_icon),
+                            contentDescription = null
+                        )
+                    }
+
+                    if (showCategoryDropdown) {
+                        // Dropdown Card listing options
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                                .wrapContentHeight(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            ) {
+                                listOf("normal", "case").forEach { category ->
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(44.dp)
+                                            .clickable(interactionSource = remember { MutableInteractionSource() },
+                                                indication = null
+                                            ) {
+                                                selectedCategory = category
+                                                showCategoryDropdown = false
+                                            }
+                                            .padding(horizontal = 16.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxSize(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            val labelText = if (category == "normal") {
+                                                stringResource(R.string.chat_history_title)
+                                            } else {
+                                                stringResource(R.string.case_chat_history_title)
+                                            }
+                                            Text(
+                                                text = labelText,
+                                                modifier = Modifier.weight(1f),
+                                                fontSize = 16.sp,
+                                                fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                                                fontWeight = if (category == selectedCategory) FontWeight.Medium else FontWeight.Normal,
+                                                color = if (category == selectedCategory) Color(0xFF4338CA) else Color(0xFF374151),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+
+                                            if (category == selectedCategory) {
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Image(
+                                                    painter = painterResource(id = R.drawable.ic_tick_icon),
+                                                    contentDescription = stringResource(R.string.selected_icon_description),
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     // User Selector
                     Surface(
                         modifier = Modifier
@@ -304,6 +397,7 @@ fun MenuDrawer(
                             Text(
                                 text = selectedUserCurr, 
                                 color = if (isCaseChat) Color.Gray else Color(0xFF4338CA), 
+                                fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                                 fontWeight = FontWeight.Medium
                             )
                             if (!isCaseChat) {
@@ -376,93 +470,6 @@ fun MenuDrawer(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Chat History Selector Button with Dropdown Icon
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(interactionSource = remember { MutableInteractionSource() },
-                                indication = null) { showCategoryDropdown = !showCategoryDropdown }
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val categoryLabel = if (selectedCategory == "normal") {
-                            stringResource(R.string.chat_history_title)
-                        } else {
-                            stringResource(R.string.case_chat_history_title)
-                        }
-                        Text(categoryLabel, fontSize = 20.sp, fontWeight = FontWeight.Medium)
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Icon(
-                            painter = painterResource(if (showCategoryDropdown) R.drawable.ic_dropdown_show else R.drawable.ic_dropdown_icon),
-                            contentDescription = null
-                        )
-                    }
-
-                    if (showCategoryDropdown) {
-                        // Dropdown Card listing options
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
-                                .wrapContentHeight(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            ) {
-                                listOf("normal", "case").forEach { category ->
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(44.dp)
-                                            .clickable(interactionSource = remember { MutableInteractionSource() },
-                                                indication = null
-                                            ) {
-                                                selectedCategory = category
-                                                showCategoryDropdown = false
-                                            }
-                                            .padding(horizontal = 16.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxSize(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            val labelText = if (category == "normal") {
-                                                stringResource(R.string.chat_history_title)
-                                            } else {
-                                                stringResource(R.string.case_chat_history_title)
-                                            }
-                                            Text(
-                                                text = labelText,
-                                                modifier = Modifier.weight(1f),
-                                                fontSize = 16.sp,
-                                                fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                                                fontWeight = if (category == selectedCategory) FontWeight.Medium else FontWeight.Normal,
-                                                color = if (category == selectedCategory) Color(0xFF4338CA) else Color(0xFF374151),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-
-                                            if (category == selectedCategory) {
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Image(
-                                                    painter = painterResource(id = R.drawable.ic_tick_icon),
-                                                    contentDescription = stringResource(R.string.selected_icon_description),
-                                                    modifier = Modifier.size(20.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
 
                 // Chat History Items (Always shown, filtered by selectedCategory)

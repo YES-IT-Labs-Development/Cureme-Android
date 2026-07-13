@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
 import com.bussiness.curemegptapp.R
 
 //@Composable
@@ -160,7 +161,9 @@ fun CustomPowerSpinner(
     onSelectionChanged: (String) -> Unit = {},
     horizontalPadding: Dp = 24.dp,
     reasons: List<String> = listOf(),
-    enabled: Boolean = true   // ✅ NEW PARAMETER
+    enabled: Boolean = true,
+    fontSize: TextUnit = 13.sp,
+    dropdownFontSize: TextUnit = 14.sp
 ) {
     var expanded by remember { mutableStateOf(false) }
     var selectedReason by remember { mutableStateOf(selectedText) }
@@ -206,7 +209,7 @@ fun CustomPowerSpinner(
                         Color(0xFF697383)
                     else
                         Color.Black,
-                    fontSize = 13.sp,
+                    fontSize = fontSize,
                     fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                 )
 
@@ -269,7 +272,7 @@ fun CustomPowerSpinner(
                     Text(
                         text = reason,
                         color = if (isSelected) Color.White else Color.Black,
-                        fontSize = 14.sp
+                        fontSize = dropdownFontSize
                     )
                 }
             }
