@@ -73,7 +73,8 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
         )
 
 
-        val priority = (state?.severity ?: "Normal").replaceFirstChar { it.uppercase() }
+        val rawSeverity = state?.severity
+        val priority = if (rawSeverity.isNullOrBlank()) "" else rawSeverity.replaceFirstChar { it.uppercase() }
 
         TopBarHeader2(title = stringResource(R.string.back_to_reports)/*"Back to Reports"*/, onBackClick = {navController.navigateUp()})
 
@@ -118,19 +119,20 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
                         maxLines = 1
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-
-                    val isHigh = priority.equals("Attention", ignoreCase = true) || priority.equals("High", ignoreCase = true)
-                    PriorityImageTag(
-                        label = priority,
-                        color = if (isHigh) Color(0xFFF31D1D) else Color(0xFF19BB9B),
-                        backgroundColor = if (isHigh) Color(0xFFF6DFE6) else Color(0xFFD3ECEC),
-                        borderColor = if (isHigh) Color(0xFFF31D1D) else Color(0xFF19BB9B),
-                        icon = if (isHigh) R.drawable.ic_attention_icon_red else R.drawable.ic_normal_icon_green
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
+                    if (priority.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        val isHigh = priority.equals("Attention", ignoreCase = true) || priority.equals("High", ignoreCase = true)
+                        PriorityImageTag(
+                            label = priority,
+                            color = if (isHigh) Color(0xFFF31D1D) else Color(0xFF19BB9B),
+                            backgroundColor = if (isHigh) Color(0xFFF6DFE6) else Color(0xFFD3ECEC),
+                            borderColor = if (isHigh) Color(0xFFF31D1D) else Color(0xFF19BB9B),
+                            icon = if (isHigh) R.drawable.ic_attention_icon_red else R.drawable.ic_normal_icon_green
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    } else {
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
 
                     // Date
                     Row(

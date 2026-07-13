@@ -351,6 +351,9 @@ fun ChatDataScreen(
                     Toast.makeText(context, successToastMessage, Toast.LENGTH_LONG).show()
                     type = targetType
                     viewModel.updateChatType(targetType)
+                    if (targetType == "case") {
+                        viewModel.clearMessages()
+                    }
                 } else {
                     viewModel.switchChat(
                         chatId = currentChatId,
@@ -364,6 +367,9 @@ fun ChatDataScreen(
                             ).show()
                             type = targetType
                             viewModel.updateChatType(targetType)
+                            if (targetType == "case") {
+                                viewModel.clearMessages()
+                            }
                         },
                         error = { errorMessage ->
                             Log.e("SwitchChat", errorMessage)

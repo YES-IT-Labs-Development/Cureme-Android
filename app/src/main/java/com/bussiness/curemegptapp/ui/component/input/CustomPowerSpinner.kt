@@ -272,7 +272,8 @@ fun CustomPowerSpinner(
                     Text(
                         text = reason,
                         color = if (isSelected) Color.White else Color.Black,
-                        fontSize = dropdownFontSize
+                        fontSize = dropdownFontSize,
+                        fontFamily = FontFamily(Font(R.font.urbanist_regular))
                     )
                 }
             }
@@ -393,7 +394,8 @@ fun CustomMultiSelectPowerSpinner(
                     Text(
                         text = reason,
                         color = if (isSelected) Color.White else Color.Black,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily(Font(R.font.urbanist_regular))
                     )
                 }
             }

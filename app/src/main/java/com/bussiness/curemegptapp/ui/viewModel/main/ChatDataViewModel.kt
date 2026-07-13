@@ -153,6 +153,10 @@ class ChatDataViewModel @Inject constructor(
         _uiState.update { ChatInputState1(selectedProfile = selectedProfile) }
     }
 
+    fun clearMessages() {
+        _messages.value = emptyList()
+    }
+
     private fun getDefaultProfiles(): List<Profile> {
         return listOf(
             Profile(
