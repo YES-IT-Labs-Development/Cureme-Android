@@ -42,6 +42,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.Download
+import com.bussiness.curemegptapp.util.DownloadUtils
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -715,6 +717,34 @@ fun CommunityChatSection(
                                 }
                                 }
                             }
+                            if (message.pdfs.isNotEmpty()) {
+                                message.pdfs.forEach { pdf ->
+                                    Row(
+                                        modifier = Modifier.padding(vertical = 4.dp)
+                                    ) {
+                                        Spacer(Modifier.width(45.dp))
+                                        AiPdfCard(
+                                            pdf = pdf,
+                                            modifier = Modifier.width(280.dp),
+                                            onCardClick = {
+                                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                    setDataAndType(pdf.uri, "application/pdf")
+                                                    flags = Intent.FLAG_ACTIVITY_NO_HISTORY or
+                                                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                                }
+                                                try {
+                                                    context.startActivity(intent)
+                                                } catch (e: Exception) {
+                                                    Toast.makeText(context, "PDF viewer app nahi mila", Toast.LENGTH_SHORT).show()
+                                                }
+                                            },
+                                            onDownloadClick = {
+                                                DownloadUtils.downloadFile(context, pdf.uri.toString(), pdf.name)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
                             if (message.severity) {
                                 Row(
                                     modifier = Modifier.padding(vertical = 4.dp)
@@ -796,6 +826,73 @@ fun PdfPreviewCard(
                     color = Color.Gray
                 )
             }
+        }
+    }
+}
+
+
+@Composable
+fun AiPdfCard(
+    pdf: PdfData,
+    modifier: Modifier = Modifier,
+    onCardClick: () -> Unit,
+    onDownloadClick: () -> Unit
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(50.dp))
+            .background(Color(0xFFE2DCF7))
+            .clickable { onCardClick() }
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Left dark circle with PDF icon
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF7B6EC7)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.PictureAsPdf,
+                contentDescription = "PDF Icon",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        // File name text
+        Text(
+            text = pdf.name.takeIf { !it.isNullOrBlank() } ?: "Summary_report.pdf",
+            color = Color(0xFF4C3EAD),
+            fontSize = 14.sp,
+            fontFamily = FontFamily(Font(R.font.urbanist_medium)),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Right white circle with download icon
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .clickable { onDownloadClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Download,
+                contentDescription = "Download Icon",
+                tint = Color(0xFF4C3EAD),
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }

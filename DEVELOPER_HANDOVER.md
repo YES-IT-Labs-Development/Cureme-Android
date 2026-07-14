@@ -102,9 +102,15 @@ All network calls are mediated by Retrofit and customized via `OkHttpClient` int
    Individual list item component for diagnostic reports listing. Dynamically checks and renders priority tags when severity text is present.
 6. **[CustomPowerSpinner.kt](file:///d:/CureMeFinalRelease/Cureme-Android/app/src/main/java/com/bussiness/curemegptapp/ui/component/input/CustomPowerSpinner.kt)**:
    Re-usable custom drop-down spinner. Modified to utilize the `Urbanist` font family universally across all selections (e.g. member select in filters).
+7. **[OpenChatScreen & ViewModel]:- It is a First screen that open up when on the chat icon of home screen. here you will ask any question from the family members and for yourself.
+    Get the chatHistory for a Particular User  
 
----
 
+
+
+------------------------------------------------
+Firebase :-  Ravi Ios dev 
+--------------------------------------------------
 ## 🛠 Handover Notes & Codebase Practices
 
 New developers should adhere to the following coding conventions already established in the codebase:

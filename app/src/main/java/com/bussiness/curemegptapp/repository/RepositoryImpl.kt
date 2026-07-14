@@ -1971,12 +1971,41 @@ class RepositoryImpl @Inject constructor(
                                         it.get("severity").asString.equals("high", ignoreCase = true)
                             } ?: false
 
+                            val fileUrl = if (dataObj.has("file_url") && !dataObj.get("file_url").isJsonNull)
+                                dataObj.get("file_url").asString
+                            else null
+
+                            val docsType = if (dataObj.has("docs_type") && !dataObj.get("docs_type").isJsonNull)
+                                dataObj.get("docs_type").asString.lowercase()
+                            else ""
+
+                            val imageList = mutableListOf<Uri>()
+                            val pdfList = mutableListOf<PdfData>()
+
+                            fileUrl?.let { url ->
+                                when (docsType) {
+                                    "jpg", "jpeg", "png", "webp" -> {
+                                        imageList.add(Uri.parse(url))
+                                    }
+                                    "pdf" -> {
+                                        pdfList.add(
+                                            PdfData(
+                                                name = url.substringAfterLast("/"),
+                                                uri = Uri.parse(url)
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+
                             val chatMessage = ChatMessage(
                                 id = messageId,
                                 chatId = chatIdValue,
                                 text = messageText,
                                 severity = isSeverityHigh,
-                                isUser = false
+                                isUser = false,
+                                images = imageList,
+                                pdfs = pdfList
                             )
 
                             emit(NetworkResult.Success(chatMessage))
