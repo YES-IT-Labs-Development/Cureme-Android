@@ -21,6 +21,8 @@ data class ChatMessage(
 
  */
 
+
+
 @Parcelize
 data class ChatMessage(
     val id: String = java.util.UUID.randomUUID().toString(),
@@ -41,6 +43,3 @@ data class PdfData(
     val uri: Uri,
     val name: String
 ) : Parcelable
-
-
-

@@ -100,7 +100,7 @@ fun PersonalInfoStep(
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             uri?.let {
                 selectedProfilePhotoUri = it
-                selectedProfilePhotoName = it.lastPathSegment ?: "selected_file"
+                selectedProfilePhotoName = it.lastPathSegment ?: ""
             }
         }
 

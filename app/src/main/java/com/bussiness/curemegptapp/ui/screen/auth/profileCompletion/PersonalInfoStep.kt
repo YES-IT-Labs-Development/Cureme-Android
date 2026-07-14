@@ -147,7 +147,7 @@ fun PersonalInfoStep(viewModel: ProfileCompeteViewModel, onNext: () -> Unit) {
     val profilePhotoPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             uri?.let {
                 viewModel.onImagePathChange(it.toString())
-                viewModel.onImageChange(it.lastPathSegment ?: "selected_file")
+                viewModel.onImageChange(it.lastPathSegment ?: "")
             }
         }
     Column(
