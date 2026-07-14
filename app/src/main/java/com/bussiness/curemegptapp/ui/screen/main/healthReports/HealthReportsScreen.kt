@@ -81,7 +81,8 @@ fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewMo
                 true
             } else {
                 val titleMatches = item.title?.contains(searchQuery, ignoreCase = true) == true
-                val memberMatches = item.user_name?.contains(searchQuery, ignoreCase = true) == true
+                val memberMatches = (item.user_name?.contains(searchQuery, ignoreCase = true) == true) ||
+                                    (item.family_name?.contains(searchQuery, ignoreCase = true) == true)
                 val severityMatches = item.severity?.contains(searchQuery, ignoreCase = true) == true
                 titleMatches || memberMatches || severityMatches
             }
@@ -100,8 +101,9 @@ fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewMo
                 } else {
                     selectedMember
                 }
-                item.user_name?.equals(memberToCompare, ignoreCase = true) == true ||
-                (memberToCompare?.isNotBlank() == true && item.user_name?.contains(memberToCompare, ignoreCase = true) == true)
+                val patientName = if (!item.user_name.isNullOrBlank()) item.user_name else (item.family_name ?: "")
+                patientName.equals(memberToCompare, ignoreCase = true) == true ||
+                (memberToCompare?.isNotBlank() == true && patientName.contains(memberToCompare, ignoreCase = true) == true)
             }
 
             matchesSearch && matchesFilter && matchesMember
@@ -212,7 +214,7 @@ fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewMo
                         ReportCard(
                             icon = R.drawable.ic_app_reporting_icon,
                             title = item.title?:"",
-                            patientName = item.user_name?:"",
+                            patientName = if (!item.user_name.isNullOrBlank()) item.user_name else (item.family_name ?: ""),
                             priority = (item.severity ?: "").replaceFirstChar { it.uppercase() },
                             date = item.chat_date?:"",
                             note = item.ai_message?:"",

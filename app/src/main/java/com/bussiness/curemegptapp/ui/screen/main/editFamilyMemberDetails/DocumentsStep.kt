@@ -173,13 +173,6 @@ fun DocumentsStep(
                         Email: ${profileData.email}
                         Files: ${profileData.uploadedFiles.size}
                     """.trimIndent()
-                    // Create toast message
-                    val toastMessage = context.getString(R.string.profile_completed_toast)
-                    Toast.makeText(
-                        context,
-                        toastMessage,
-                        Toast.LENGTH_LONG
-                    ).show()
                     onNext()
                 }
             }

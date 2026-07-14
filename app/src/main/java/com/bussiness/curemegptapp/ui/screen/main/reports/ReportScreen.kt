@@ -178,7 +178,7 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = state?.user_name?:"",
+                            text = state?.user_name?.takeIf { it.isNotBlank() } ?: state?.family_name ?: "",
                             fontSize = 16.sp,
                             color = Color(0xFF4338CA),
                             fontFamily = FontFamily(Font(R.font.urbanist_medium)),

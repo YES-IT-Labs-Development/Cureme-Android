@@ -2,7 +2,7 @@
 
 This document serves as a comprehensive developer handover guide for the **CureMe Android Application** codebase. It outlines the project's purpose, architecture, features, tech stack, configuration, and codebase guidelines to help a new developer quickly onboard and maintain the project.
 
----
+
 
 ## 📱 Project Overview
 

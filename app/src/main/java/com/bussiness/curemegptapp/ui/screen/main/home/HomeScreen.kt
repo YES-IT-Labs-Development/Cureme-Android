@@ -43,6 +43,7 @@ import com.bussiness.curemegptapp.ui.dialog.CompleteProfileDialog
 import com.bussiness.curemegptapp.ui.viewModel.main.HomeViewModel
 import com.bussiness.curemegptapp.util.SessionManager
 import com.bussiness.curemegptapp.util.AppConstant
+import com.bussiness.curemegptapp.util.AppSessionState
 import kotlinx.coroutines.delay
 import androidx.navigation.NavGraph.Companion.findStartDestination
 
@@ -68,6 +69,15 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         viewModel.getHomeRequest()
+    }
+
+    val profileCompletion = uiStateHome?.user_context?.profile_completion
+    LaunchedEffect(profileCompletion) {
+        if (profileCompletion != null && profileCompletion < 100 && !AppSessionState.hasProfileDialogBeenShown) {
+            delay(1000)
+            showCompleteDialog = true
+            AppSessionState.hasProfileDialogBeenShown = true
+        }
     }
 
 

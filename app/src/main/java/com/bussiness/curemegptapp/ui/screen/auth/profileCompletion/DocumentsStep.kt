@@ -185,12 +185,6 @@ fun DocumentsStep(
                     ).show()
                 } else {
                     viewModel.submitProfile(context,onSuccess = {
-                        val toastMessage = context.getString(R.string.profile_completed_toast)
-                        Toast.makeText(
-                            context,
-                            toastMessage,
-                            Toast.LENGTH_LONG
-                        ).show()
                         onNext()           
                     },
                         onError = {

@@ -19,4 +19,5 @@ object ApiEndPoint {
     const val COMPLETE_GENERAL_URL  = "complete_general_profile"
     const val RESPONSE_LIKE_DISLIKE  = "response_like_dislike"
     const val VIEW_SUMMARY  = "view_summary"
+
 }

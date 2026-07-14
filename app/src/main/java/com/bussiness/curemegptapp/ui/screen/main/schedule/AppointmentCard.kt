@@ -160,7 +160,7 @@ fun AppointmentCard(appointment: AppointmentUIModel, onEditClick: () -> Unit,
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = appointment.time,
+                        text = formatTimeTo12Hour(appointment.time),
                         fontSize = 14.sp,
                         color = Color.Black,
                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),
@@ -237,5 +237,25 @@ fun AppointmentCard(appointment: AppointmentUIModel, onEditClick: () -> Unit,
 
             }
         }
+    }
+}
+
+fun formatTimeTo12Hour(timeStr: String): String {
+    if (timeStr.isBlank()) return ""
+    return try {
+        val parts = timeStr.trim().split(":")
+        if (parts.isEmpty()) return timeStr
+        val hours = parts[0].toIntOrNull() ?: return timeStr
+        val minutes = parts.getOrNull(1)?.toIntOrNull() ?: 0
+        
+        val amPm = if (hours >= 12) "PM" else "AM"
+        val displayHours = when {
+            hours == 0 -> 12
+            hours > 12 -> hours - 12
+            else -> hours
+        }
+        String.format("%02d:%02d %s", displayHours, minutes, amPm)
+    } catch (e: Exception) {
+        timeStr
     }
 }

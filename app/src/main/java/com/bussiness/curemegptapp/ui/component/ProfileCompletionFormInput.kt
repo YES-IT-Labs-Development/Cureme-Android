@@ -290,9 +290,18 @@ fun ProfileInputMultipleLineField(
         }
 
         // 🔹 TextField
-        BasicTextField(
+        TextField(
             value = value,
             onValueChange = onValueChange,
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    color = Color(0xFFB8B9BD),
+                    fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 13.sp
+                )
+            },
             textStyle = TextStyle(
                 color = Color.Black,
                 fontSize = 13.sp,
@@ -304,26 +313,14 @@ fun ProfileInputMultipleLineField(
                 .height(90.dp)
                 .padding(horizontal = 8.dp)
                 .clip(shape)
-                .border(1.dp, Color(0xFFC3C6CB), shape)
-                .background(Color.White),
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    if (value.isEmpty()) {
-                        Text(
-                            text = placeholder,
-                            color = Color(0xFFB8B9BD),
-                            fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 13.sp
-                        )
-                    }
-                    innerTextField()
-                }
-            },
+                .border(1.dp, Color(0xFFC3C6CB), shape),
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = Color.White,
+                focusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            ),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
         )
     }
@@ -964,7 +961,8 @@ fun ProfilePhotoPicker(
                     GradientButton2(
                         text = "Choose File",
                         onClick = onChooseClick,
-                        modifier = Modifier.width(130.dp)
+                        modifier = Modifier.width(130.dp),
+                        paddingHorizontal = 0.dp
                     )
                 }
 
