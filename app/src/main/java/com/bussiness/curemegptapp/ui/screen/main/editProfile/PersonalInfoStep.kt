@@ -440,7 +440,6 @@ fun PersonalInfoStep(
             onClick = {
 
                 if (validateFields()) {
-
                     viewModel.updatePersonalInfo(
                         fullName = profile.fullName,
                         contactNumber = profile.phoneCopy,
@@ -459,20 +458,25 @@ fun PersonalInfoStep(
                             Toast.makeText(context, "Failed to upload profile", Toast.LENGTH_SHORT).show()
                         }
                     )
-
-
                 }
             }
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
-
-
-
-
-
     }
-
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -281,7 +281,6 @@ fun EditProfileScreen(
                 ),
                 cancelText = "Remind Me Later",
                 confirmText = "Complete Now",
-                skipText = "Skip for Now",
 
                 onDismiss = {
                     showCompleteDialog = false
@@ -289,10 +288,6 @@ fun EditProfileScreen(
                 onConfirm = {
                     showCompleteDialog = false
                     navController.navigate(AppDestination.MainScreen)
-                },
-                onSkip = {
-                    showCompleteDialog = false
-                    // TODO – "Skip for Now"
                 }
             )
         }

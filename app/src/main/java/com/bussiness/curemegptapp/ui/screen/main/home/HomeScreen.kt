@@ -127,7 +127,6 @@ fun HomeScreen(
             ),
             cancelText = stringResource(R.string.remind_later),
             confirmText = stringResource(R.string.complete_now),
-            skipText = stringResource(R.string.skip_for_now),
 
             onDismiss = {
                 showCompleteDialog = false
@@ -135,10 +134,6 @@ fun HomeScreen(
             onConfirm = {
                 showCompleteDialog = false
                 navController.navigate(AppDestination.EditProfileScreen)
-            },
-            onSkip = {
-                showCompleteDialog = false
-                // TODO – "Skip for Now"
             }
         )
     }

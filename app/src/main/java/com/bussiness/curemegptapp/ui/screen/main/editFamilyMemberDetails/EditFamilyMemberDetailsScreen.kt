@@ -76,7 +76,6 @@ import com.bussiness.curemegptapp.ui.component.UniversalInputField
 import com.bussiness.curemegptapp.ui.component.input.CustomPowerSpinner
 import com.bussiness.curemegptapp.ui.dialog.AlertCardDialog
 import com.bussiness.curemegptapp.ui.dialog.CalendarDialog
-import com.bussiness.curemegptapp.ui.dialog.CompleteProfileDialog
 import com.bussiness.curemegptapp.ui.dialog.MemberProfileUpdatedDialog
 import com.bussiness.curemegptapp.ui.dialog.SuccessfulDialog
 import com.bussiness.curemegptapp.ui.viewModel.main.EditProfileViewModel

@@ -86,15 +86,15 @@ fun PersonalInfoStep(viewModel: ProfileCompeteViewModel, onNext: () -> Unit) {
 
     if (showEmailOTPDialog) {
         OTPVerificationDialog(
-            onDismiss = { showEmailOTPDialog = false },
-            onVerify = {otp ->
-
+            onDismiss = {    showEmailOTPDialog = false
+                        },
+            onVerify = {
+                otp ->
                 if(otp.equals(viewModel.currentOtp)){
                     viewModel.onEmailVerified()
                     showEmailOTPDialog= false
                     Toast.makeText(context, "Email verified successfully!", Toast.LENGTH_SHORT).show()
                 }
-
                 else{
                     Toast.makeText(context, "Please Enter Valid OTP", Toast.LENGTH_SHORT).show()
                 }
@@ -151,8 +151,7 @@ fun PersonalInfoStep(viewModel: ProfileCompeteViewModel, onNext: () -> Unit) {
             }
         }
     Column(
-        modifier =
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
         ProfileInputField(
             label = stringResource(R.string.full_name_label),
             isImportant = true,

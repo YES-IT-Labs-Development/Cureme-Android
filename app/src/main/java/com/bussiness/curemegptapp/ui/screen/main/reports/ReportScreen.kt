@@ -23,6 +23,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -49,6 +53,54 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
 
     Log.d("ReportScreen", "Displaying report with ID: $id")
     val state by viewModel.uiStateDetails.collectAsState()
+    val familyMembersList by viewModel.familyMembers.collectAsState()
+    val userProfileImage by viewModel.userProfileImage.collectAsState()
+
+    val profileImageUrl = remember(state, familyMembersList, userProfileImage) {
+        val patientName = state?.user_name?.takeIf { it.isNotBlank() } ?: state?.family_name ?: ""
+        
+        // 1. Check if the API response itself has the profile image
+        val apiProfileImage = state?.profile_image?.takeIf { it.isNotBlank() }
+            ?: state?.profile_photo?.takeIf { it.isNotBlank() }
+        
+        if (!apiProfileImage.isNullOrBlank()) {
+            if (apiProfileImage.startsWith("http://") || apiProfileImage.startsWith("https://")) {
+                apiProfileImage
+            } else {
+                com.bussiness.curemegptapp.util.AppConstant.IMAGE_BASE_URL + apiProfileImage
+            }
+        } else {
+            // 2. Find matching family member
+            val matchedFamily = familyMembersList.firstOrNull { 
+                it.name.trim().equals(patientName.trim(), ignoreCase = true) 
+            }
+            val photoPath = matchedFamily?.profilePhoto?.takeIf { it.isNotBlank() }
+            
+            if (!photoPath.isNullOrBlank()) {
+                if (photoPath.startsWith("http://") || photoPath.startsWith("https://")) {
+                    photoPath
+                } else {
+                    com.bussiness.curemegptapp.util.AppConstant.IMAGE_BASE_URL + photoPath
+                }
+            } else {
+                // 3. Fallback to main user's profile image if it's the main user (or default)
+                val isMyself = patientName.isBlank() || 
+                    patientName.trim().contains("Myself", ignoreCase = true) || 
+                    patientName.trim().equals(viewModel.getUserName().trim(), ignoreCase = true)
+                    
+                val currentUserImg = userProfileImage
+                if (isMyself && !currentUserImg.isNullOrBlank()) {
+                    if (currentUserImg.startsWith("http://") || currentUserImg.startsWith("https://")) {
+                        currentUserImg
+                    } else {
+                        com.bussiness.curemegptapp.util.AppConstant.IMAGE_BASE_URL + currentUserImg
+                    }
+                } else {
+                    null
+                }
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.getReportDetailsRequest(id?:"")
@@ -170,11 +222,28 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
                             color = Color.White,
                             shadowElevation = 8.dp
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_profile_icon4),
-                                contentDescription = null,
-                                modifier = Modifier.size(29.dp),
-                            )
+                            if (!profileImageUrl.isNullOrEmpty() &&
+                                profileImageUrl != "https://curemegpt.tgastaging.com/" &&
+                                profileImageUrl != "https://curemegpt.tgastaging.com"
+                            ) {
+                                AsyncImage(
+                                    model = profileImageUrl,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(29.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_profile_icon4),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(29.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(

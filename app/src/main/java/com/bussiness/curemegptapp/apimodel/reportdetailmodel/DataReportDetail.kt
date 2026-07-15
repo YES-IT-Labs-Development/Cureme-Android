@@ -10,5 +10,7 @@ data class DataReportDetail(
     val severity: String?="",
     val summary: String?="",
     val title: String?="",
-    val user_name: String?=""
+    val user_name: String?="",
+    val profile_image: String?="",
+    val profile_photo: String?=""
 )

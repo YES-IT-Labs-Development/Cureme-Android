@@ -50,23 +50,23 @@ fun CompleteProfileDialog(
     ),
     cancelText: String = "Remind Me Later",
     confirmText: String = "Complete Now",
-    skipText: String = "Skip for Now",
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    onSkip: () -> Unit
+    onConfirm: () -> Unit
 ) {
 
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
             dismissOnBackPress = false,
-            dismissOnClickOutside = false
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
         )
     ) {
 
         Box(
             modifier = Modifier
-                .padding(5.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
                 .clip(RoundedCornerShape(40.dp))
                 .background(Color.White)
         ) {
@@ -79,7 +79,10 @@ fun CompleteProfileDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
 
                         Image(
                             painter = painterResource(id = icon),
@@ -98,6 +101,8 @@ fun CompleteProfileDialog(
                             maxLines = 2
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Image(
                         painter = painterResource(id = R.drawable.ic_close),
@@ -142,7 +147,7 @@ fun CompleteProfileDialog(
                     CancelButton(
                         cancelText = cancelText,
                         fontSize = 14.sp,
-                        paddingHorizontal = 2.dp,
+                        paddingHorizontal = 10.dp,
                         fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                         modifier = Modifier
                             .weight(1f)
@@ -162,22 +167,6 @@ fun CompleteProfileDialog(
                             .height(52.dp)
                     )
                 }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // 🔹 Skip Text Button
-                Text(
-                    text = skipText,
-                    fontSize = 14.sp,
-                    color = Color(0xFF697383),
-                    fontFamily = FontFamily(Font(R.font.urbanist_regular)),
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .clickable( interactionSource = remember { MutableInteractionSource() },
-                            indication = null) { onSkip() }
-                        .padding(6.dp)
-                )
             }
         }
     }

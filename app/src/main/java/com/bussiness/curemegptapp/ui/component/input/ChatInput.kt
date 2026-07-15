@@ -1607,10 +1607,9 @@ fun CaseRecommendations(
     navController: NavHostController?
 ) {
     val textLower = messageText.lowercase()
-    val suggestAppointment = listOf("urgent", "critical", "severe", "emergency", "pain", "hospital", "doctor", "appointment", "schedule", "dentist", "physician", "visit clinic").any { textLower.contains(it) }
     val recommendMedication = listOf("medication", "pill", "tablet", "medicine", "dosage", "prescription", "ibuprofen", "paracetamol", "aspirin").any { textLower.contains(it) }
 
-    if (suggestAppointment || recommendMedication) {
+    if (recommendMedication) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1627,55 +1626,6 @@ fun CaseRecommendations(
                 color = Color(0xFF4338CA),
                 fontFamily = FontFamily(Font(R.font.urbanist_semibold))
             )
-            
-            if (suggestAppointment) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFFFFF5F5), RoundedCornerShape(8.dp))
-                        .border(1.dp, Color(0xFFFDCBCB), RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Schedule Appointment",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFFD32F2F),
-                            fontFamily = FontFamily(Font(R.font.urbanist_medium))
-                        )
-                        Text(
-                            text = "For urgent/critical concerns",
-                            fontSize = 10.sp,
-                            color = Color(0xFF7F1D1D),
-                            fontFamily = FontFamily(Font(R.font.urbanist_regular))
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                brush = Brush.horizontalGradient(
-                                    listOf(Color(0xFFF31D1D), Color(0xFF8D1111))
-                                ),
-                                shape = RoundedCornerShape(16.dp)
-                            )
-                            .clickable {
-                                navController?.navigate(AppDestination.ScheduleNewAppointment)
-                            }
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(
-                            text = "Schedule",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            fontFamily = FontFamily(Font(R.font.urbanist_semibold))
-                        )
-                    }
-                }
-            }
 
             if (recommendMedication) {
                 Row(

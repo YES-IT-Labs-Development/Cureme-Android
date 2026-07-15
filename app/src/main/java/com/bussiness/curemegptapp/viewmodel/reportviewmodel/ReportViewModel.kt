@@ -8,6 +8,7 @@ import com.bussiness.curemegptapp.apimodel.personalmodel.User
 import com.bussiness.curemegptapp.apimodel.reportdetailmodel.DataReportDetail
 import com.bussiness.curemegptapp.apimodel.reportmodel.Data
 import com.bussiness.curemegptapp.apimodel.scheduleAppointment.FamilyModel
+import com.bussiness.curemegptapp.apimodel.profilemodel.Data.UserProfile
 import com.bussiness.curemegptapp.repository.NetworkResult
 import com.bussiness.curemegptapp.repository.Repository
 import com.bussiness.curemegptapp.repository.Resource
@@ -35,8 +36,15 @@ class ReportViewModel @Inject constructor(private val repository: Repository,
     private val _memberOptions = MutableStateFlow<List<String>>(emptyList())
     val memberOptions = _memberOptions.asStateFlow()
 
+    private val _familyMembers = MutableStateFlow<List<FamilyModel>>(emptyList())
+    val familyMembers = _familyMembers.asStateFlow()
+
+    private val _userProfileImage = MutableStateFlow<String?>(null)
+    val userProfileImage = _userProfileImage.asStateFlow()
+
     init {
         getFamilyMembers()
+        fetchUserProfile()
     }
 
     fun getFamilyMembers() {
@@ -45,6 +53,7 @@ class ReportViewModel @Inject constructor(private val repository: Repository,
                 when (result) {
                     is NetworkResult.Success -> {
                         val data = result.data ?: emptyList()
+                        _familyMembers.value = data
                         val familyNames = data.mapNotNull { it.name }.toMutableList()
                         if (!familyNames.contains("My Self")) {
                             familyNames.add(0, "My Self")
@@ -55,6 +64,16 @@ class ReportViewModel @Inject constructor(private val repository: Repository,
                         _memberOptions.value = listOf("My Self")
                     }
                     else -> Unit
+                }
+            }
+        }
+    }
+
+    fun fetchUserProfile() {
+        viewModelScope.launch {
+            repository.getUserDetails().collectLatest { result ->
+                if (result is NetworkResult.Success) {
+                    _userProfileImage.value = result.data?.profile_image
                 }
             }
         }
