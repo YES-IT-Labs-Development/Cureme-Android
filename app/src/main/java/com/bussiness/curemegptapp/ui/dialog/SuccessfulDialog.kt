@@ -44,8 +44,8 @@ fun SuccessfulDialog(
 ) {
 
     Dialog(onDismissRequest = { onDismiss() },   properties = DialogProperties(
-        dismissOnClickOutside = false, // 🔴 IMPORTANT
-        dismissOnBackPress = false       // back press se band chahiye to true
+        dismissOnClickOutside = false, // IMPORTANT
+        dismissOnBackPress = false
     )) {
 
         Box(
@@ -92,7 +92,7 @@ fun SuccessfulDialog(
                             Column {
                                 Text(
                                     text = title,
-                                    fontSize = 17.sp,
+                                    fontSize = 16.sp,
                                     fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                                     fontWeight = FontWeight.Medium,
                                     color = Color.Black

@@ -10,7 +10,7 @@ data class PersonalUiState(
     val heightType: String = "Cm",
     val weight: String = "",
     val weightType: String = "Kg",
-    val imageProfile: String = "selected_file",
+    val imageProfile: String = "No file chosen",
     val imageProfilePath: String = "",
     val errorMessage: String? = null,
     val loginSuccess: Boolean = false,
