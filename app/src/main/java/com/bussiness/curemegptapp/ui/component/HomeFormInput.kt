@@ -316,7 +316,7 @@ fun AppointmentBox(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onClick() }
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .padding(horizontal = 6.dp, vertical = 6.dp)
     ) {
         Row(
             modifier = Modifier.padding(top = 2.dp),
@@ -335,7 +335,8 @@ fun AppointmentBox(
                 overflow = TextOverflow.Ellipsis,
                 color = Color(0xFF697383),
                 fontFamily = FontFamily(Font(R.font.urbanist_medium)),
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                lineHeight = 15.sp
             )
         }
     }

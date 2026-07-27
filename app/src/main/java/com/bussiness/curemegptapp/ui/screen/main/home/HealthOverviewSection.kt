@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -43,6 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
 import com.bussiness.curemegptapp.util.AppConstant
 import com.bussiness.curemegptapp.R
@@ -51,6 +53,7 @@ import com.bussiness.curemegptapp.data.model.HealthProfile
 import com.bussiness.curemegptapp.ui.component.AppointmentBox
 import com.bussiness.curemegptapp.ui.component.GradientRedButton
 import com.bussiness.curemegptapp.ui.viewModel.main.HomeViewModel
+import java.util.Calendar
 
 
 val profiles = listOf(
@@ -219,7 +222,7 @@ fun UserHealthCard(
 ) {
 
 
-    val appointmentText = remember(profile, allProfiles) {
+    /*val appointmentText = remember(profile, allProfiles) {
         var closestDaysDiff: Int? = null
         val profilesToCheck = if (!allProfiles.isNullOrEmpty()) allProfiles else listOfNotNull(profile)
         
@@ -256,6 +259,50 @@ fun UserHealthCard(
             closestDaysDiff == 1 -> "1 Day Left"
             else -> "Appointment Scheduled in $closestDaysDiff Days"
         }
+
+   }*/
+
+    val appointmentText = remember(profile) {
+        var closestDaysDiff: Int? = null
+
+        profile?.active_alerts?.appointments
+            ?.filter { it.complete_status != 1 && !it.date.isNullOrBlank() }
+            ?.forEach { appt ->
+
+                val apptDate = parseDate(appt.date!!)
+                if (apptDate != null) {
+                    val todayCal = Calendar.getInstance().apply {
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+
+                    val apptCal = Calendar.getInstance().apply {
+                        time = apptDate
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+
+                    val daysDiff =
+                        ((apptCal.timeInMillis - todayCal.timeInMillis) / (1000 * 60 * 60 * 24)).toInt()
+
+                    if (daysDiff >= 0 &&
+                        (closestDaysDiff == null || daysDiff < closestDaysDiff!!)
+                    ) {
+                        closestDaysDiff = daysDiff
+                    }
+                }
+            }
+
+        when {
+            closestDaysDiff == null -> "No Appointment"
+            closestDaysDiff == 0 -> "Today"
+            closestDaysDiff == 1 -> "Appointment in 1 Day"
+            else -> "Appointment in $closestDaysDiff Days"
+        }
     }
 
     val alerts = listOf(
@@ -269,40 +316,47 @@ fun UserHealthCard(
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF0EFFB)),
         shape = RoundedCornerShape(30.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding( start = 16.dp, end = 16.dp, top = 10.dp, bottom = 16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val imageUrl = profile?.profile_image
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let {
+                            if (it.startsWith("http://") || it.startsWith("https://")) {
+                                it
+                            } else {
+                                AppConstant.IMAGE_BASE_URL + it
+                            }
+                        }
+
                     Box(
                         modifier = Modifier
-                            .width(70.dp)
-                            .height(70.dp)
+                            .size(70.dp)
                             .clip(RoundedCornerShape(20.dp))
-
                     ) {
-                        val imageUrl = profile?.profile_image?.let {
-                            if (it.isEmpty()) null
-                            else if (it.startsWith("http://") || it.startsWith("https://")) it
-                            else AppConstant.IMAGE_BASE_URL + it
-                        }
-                        if (!imageUrl.isNullOrEmpty() && 
-                            imageUrl != AppConstant.IMAGE_BASE_URL && 
-                            imageUrl != "https://curemegpt.tgastaging.com") {
+                        if (!imageUrl.isNullOrBlank() &&
+                            imageUrl != AppConstant.IMAGE_BASE_URL
+                        ) {
                             AsyncImage(
                                 model = imageUrl,
-                                contentDescription = null,
-                                modifier = Modifier.matchParentSize(),
+                                contentDescription = "Profile Image",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(20.dp)),
                                 contentScale = ContentScale.Crop,
-                                placeholder = painterResource(id = R.drawable.user_not_found),
-                                error = painterResource(id = R.drawable.user_not_found)
+                                placeholder = painterResource(R.drawable.user_not_found),
+                                error = painterResource(R.drawable.user_not_found)
                             )
                         } else {
                             Image(
-                                painter = painterResource(id = R.drawable.user_not_found),
-                                contentDescription = null,
-                                modifier = Modifier.matchParentSize(),
+                                painter = painterResource(R.drawable.user_not_found),
+                                contentDescription = "Default Profile Image",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(20.dp)),
                                 contentScale = ContentScale.Crop
                             )
                         }
@@ -312,7 +366,10 @@ fun UserHealthCard(
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = profile?.name?:"",
+                                text = profile?.name
+                                    ?.substringBefore("(")
+                                    ?.trim()
+                                    .orEmpty(),
                                 fontSize = 12.sp,
                                 fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                                 fontWeight = FontWeight.Medium,
@@ -321,25 +378,29 @@ fun UserHealthCard(
                                 modifier = Modifier.width(100.dp)
                             )
                             Spacer(modifier = Modifier.width(5.dp))
-                            Surface(
-                                modifier = Modifier.wrapContentWidth(),
-                                shape = RoundedCornerShape(20.dp),
-                                color = Color(0xFFE8E4FF)
-                            ) {
-                                Text(
-                                    text = profile?.dob?:"",
-                                    fontSize = 11.sp,
-                                    color = Color(0xFF4338CA),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                    fontFamily = FontFamily(Font(R.font.urbanist_medium)),
-                                    fontWeight = FontWeight.Medium,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                            }
+                            profile?.dob
+                                ?.takeIf { it.isNotBlank() }
+                                ?.let { dob ->
+                                    Surface(
+                                        modifier = Modifier.wrapContentWidth(),
+                                        shape = RoundedCornerShape(20.dp),
+                                        color = Color(0xFFE8E4FF)
+                                    ) {
+                                        Text(
+                                            text = dob,
+                                            fontSize = 11.sp,
+                                            color = Color(0xFF4338CA),
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                            fontFamily = FontFamily(Font(R.font.urbanist_medium)),
+                                            fontWeight = FontWeight.Medium,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
                         }
                         Text(
                             text = if (profile?.name?.contains("Myself", ignoreCase = true) == true) {
-                                "self"
+                                "Self"
                             } else {
                                 "family"
                             },
@@ -395,15 +456,15 @@ fun UserHealthCard(
                     activeAlerts.medications?.forEach { med ->
                         val name = med.medication_name
                         if (!name.isNullOrBlank()) {
-                            list.add("$name medication reminder")
+                            list.add("$name Medication Reminder")
                         } else {
                             list.add("Medication reminder")
                         }
                     }
                     activeAlerts.appointments?.forEach { appt ->
-                        val desc = appt.description
+                        val desc = appt.appointment_type
                         if (!desc.isNullOrBlank()) {
-                            list.add(desc.removeSuffix("."))
+                            list.add( "Appointment :$desc Due".removeSuffix("."))
                         } else {
                             list.add("Appointment reminder")
                         }

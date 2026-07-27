@@ -29,11 +29,25 @@
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.CureMeGPTApp">
+
+            <!-- Launcher -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- AppsFlyer App Link -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="share-chat.onelink.me" />
+            </intent-filter>
+
         </activity>
         <activity
             android:name="com.canhub.cropper.CropImageActivity"

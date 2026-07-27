@@ -20,7 +20,9 @@ data class AppointmentAlert(
     val appointment_for_whom: String?,
     val complete_status: Int?,
     val created_at: String?,
-    val updated_at: String?
+    val updated_at: String?,
+    val appointment_type : String?,
+
 )
 
 data class MedicationAlert(

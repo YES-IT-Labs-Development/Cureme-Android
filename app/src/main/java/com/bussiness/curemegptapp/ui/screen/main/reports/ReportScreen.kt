@@ -55,13 +55,19 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
     val state by viewModel.uiStateDetails.collectAsState()
     val familyMembersList by viewModel.familyMembers.collectAsState()
     val userProfileImage by viewModel.userProfileImage.collectAsState()
+    LaunchedEffect(Unit) {
+        viewModel.getReportDetailsRequest(id?:"")
+    }
 
     val profileImageUrl = remember(state, familyMembersList, userProfileImage) {
         val patientName = state?.user_name?.takeIf { it.isNotBlank() } ?: state?.family_name ?: ""
         
         // 1. Check if the API response itself has the profile image
+        /*val apiProfileImage = state?.profile_image?.takeIf { it.isNotBlank() }
+            ?: state?.user_profile_pic?.takeIf { it.isNotBlank() }*/
         val apiProfileImage = state?.profile_image?.takeIf { it.isNotBlank() }
-            ?: state?.profile_photo?.takeIf { it.isNotBlank() }
+            ?: state?.user_profile_pic?.takeIf { it.isNotBlank() }
+            ?: state?.family_profile_pic?.takeIf { it.isNotBlank() }
         
         if (!apiProfileImage.isNullOrBlank()) {
             if (apiProfileImage.startsWith("http://") || apiProfileImage.startsWith("https://")) {
@@ -100,10 +106,6 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
                 }
             }
         }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.getReportDetailsRequest(id?:"")
     }
 
     Column(
@@ -227,7 +229,7 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
                                 profileImageUrl != "https://curemegpt.tgastaging.com"
                             ) {
                                 AsyncImage(
-                                    model = profileImageUrl,
+                                    model = profileImageUrl ,
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(29.dp)
@@ -307,7 +309,8 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = Color(0xFFF9F9FD),
-                border = BorderStroke(1.dp, Color(0xFFE7E6F8))
+                border = BorderStroke(1.dp, Color(0xFFE7E6F8)),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
@@ -335,7 +338,8 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = Color(0xFFF9F9FD),
-                border = BorderStroke(1.dp, Color(0xFFE7E6F8))
+                border = BorderStroke(1.dp, Color(0xFFE7E6F8)),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
@@ -363,7 +367,8 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = Color(0xFFF9F9FD),
-                border = BorderStroke(1.dp, Color(0xFFE7E6F8))
+                border = BorderStroke(1.dp, Color(0xFFE7E6F8)),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
@@ -394,12 +399,14 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
                         value = state?.ai_insights?.action_type?:""
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    InsightRow(
-                        label = stringResource(R.string.Symptoms),
-                        value = state?.ai_insights?.symptom_analysis
-                            ?.joinToString(", ")
-                            .orEmpty()
-                    )
+                    state?.ai_insights?.symptom_analysis
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.let { symptoms ->
+                            InsightRow(
+                                label = stringResource(R.string.Symptoms),
+                                value = symptoms.joinToString(", ")
+                            )
+                        }
                 }
             }
 

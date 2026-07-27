@@ -248,34 +248,32 @@ fun HomeScreen(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9FD)),
                 shape = RoundedCornerShape(30.dp)
             ) {
-                MedicationsAndAllergies(
-                    medications = selectedMedications,
-                    allergies = selectedAllergies,
-                    onEditClick = {
-                        navController.navigate(AppDestination.EditProfileScreen)
-                    }
-                )
+                if (selectedMedications.isNotEmpty() || selectedAllergies.isNotEmpty()) {
+                    MedicationsAndAllergies(
+                        medications = selectedMedications,
+                        allergies = selectedAllergies,
+                        onEditClick = {
+                            navController.navigate(AppDestination.EditProfileScreen)
+                        }
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 RecommendedSteps(steps = uiStateHome?.recommended_next_steps)
             }
 
             Spacer(modifier = Modifier.height(28.dp))
 
             ThingsNeedingAttention(
-
                     attentionItems = uiStateHome?.needAttentionList,
-
                     onScheduleClick = { attention ->
                         val symptom = attention.symptoms?.getOrNull(0) ?: ""
                         viewModel.removeLocalAlert(symptom)
                         navController.navigate(AppDestination.ScheduleNewAppointment)
                     },
-
                     onViewAllClick = {
                         navController.navigate(AppDestination.ThingNeedingAttention)
                     }
-
                 )
 
             //

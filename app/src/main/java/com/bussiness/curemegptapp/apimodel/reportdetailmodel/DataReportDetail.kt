@@ -12,5 +12,7 @@ data class DataReportDetail(
     val title: String?="",
     val user_name: String?="",
     val profile_image: String?="",
-    val profile_photo: String?=""
+    val profile_photo: String?="",
+    val user_profile_pic: String?="",
+    val family_profile_pic : String?=""
 )

@@ -414,7 +414,7 @@ fun TimeSlotItem(
 
     Box(
         modifier = Modifier
-            .fillMaxWidth()
+            .width(100.dp)
             .clip(RoundedCornerShape(50.dp))
             .border(
                 width = 1.dp,

@@ -150,6 +150,8 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.android.gms:play-services-auth:21.1.1")
 
+    //appsflyer
+    implementation(libs.af.android.sdk)
 
 //    // firebase
 //    implementation(platform(libs.firebase.bom))

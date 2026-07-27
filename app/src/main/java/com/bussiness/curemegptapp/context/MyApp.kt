@@ -1,6 +1,7 @@
 package com.bussiness.curemegptapp.context
 
 import android.app.Application
+import com.appsflyer.AppsFlyerLib
 
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
@@ -14,7 +15,7 @@ class MyApp : Application(){
         super.onCreate()
 
         FirebaseApp.initializeApp(this)
-        // ✅ THEN use Firebase services
+
         FirebaseMessaging.getInstance().token
             .addOnCompleteListener { task: Task<String> ->
                 if (task.isSuccessful) {
@@ -22,6 +23,15 @@ class MyApp : Application(){
                     Timber.d("FCM Token: $token")
                 }
             }
+
+        AppsFlyerLib.getInstance().setDebugLog(true)
+
+        AppsFlyerLib.getInstance().init(
+            "eyUDbhV7uqoqsrG3fKPWaF",
+            null,
+            this
+        )
+
     }
 
 }
