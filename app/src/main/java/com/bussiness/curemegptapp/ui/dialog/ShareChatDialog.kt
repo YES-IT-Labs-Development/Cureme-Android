@@ -43,7 +43,7 @@ import com.bussiness.curemegptapp.R
 
 @Composable
 fun ShareChatDialog(
-    shareLink: String = "https://cureme.app/share/abc123",
+    shareLink: String = "",
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -155,7 +155,7 @@ fun ShareChatDialog(
                     ) {
                         Text(
                             text = shareLink,
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                             color = Color(0xFF374151),
                             maxLines = 1

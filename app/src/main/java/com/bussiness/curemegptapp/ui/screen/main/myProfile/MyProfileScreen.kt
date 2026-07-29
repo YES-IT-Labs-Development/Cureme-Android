@@ -78,6 +78,7 @@ import com.bussiness.curemegptapp.ui.theme.AppGradientColors
 import com.bussiness.curemegptapp.ui.viewModel.main.Document
 import com.bussiness.curemegptapp.ui.viewModel.main.FamilyMember
 import com.bussiness.curemegptapp.ui.viewModel.main.MyProfileViewModel
+import com.bussiness.curemegptapp.util.DateUtils
 import com.bussiness.curemegptapp.util.DownloadUtils
 import com.bussiness.curemegptapp.util.UriToRequestBody
 import com.canhub.cropper.CropImage.CancelledResult.uriContent
@@ -570,7 +571,7 @@ fun PersonalInformationSection(member: FamilyMember) {
 
             SelectableInfoBox(
                 icon = R.drawable.ic_dob,
-                value = member.dateOfBirth,
+                value = DateUtils.formatToDisplay(member.dateOfBirth),
                 isSelected = selected == "dob",
                 onClick = { selected = "dob" },
                 modifier = Modifier.weight(1f)

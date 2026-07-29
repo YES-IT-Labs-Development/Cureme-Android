@@ -19,19 +19,31 @@ import com.bussiness.curemegptapp.util.SessionManager
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(navController: NavHostController) {
+fun SplashScreen(navController: NavHostController, isDeepLinkPending: Boolean = false) {
 
     val context = LocalContext.current
     val sessionManager = SessionManager.getInstance(context)
 
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
         delay(2000)
-        navigateToNext(navController,sessionManager)
+
+        // ✅ Deep link process hone tak wait karo — jab tak isDeepLinkPending false na ho
+        var waited = 0
+        while (isDeepLinkPending && waited < 5000) {
+            delay(100)
+            waited += 100
+        }
+
+        // ✅ Agar deep link abhi bhi pending hai (5 sec timeout ke baad bhi), to skip karo
+        // MainActivity ka LaunchedEffect khud ChatDataScreen pe navigate kar dega
+        if (!isDeepLinkPending) {
+            navigateToNext(navController, sessionManager)
+        }
     }
 
     Column(modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)) {
+        .fillMaxSize()
+        .background(Color.White)) {
         Image(painter = painterResource(R.drawable.splash1),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
@@ -40,11 +52,11 @@ fun SplashScreen(navController: NavHostController) {
 }
 
 private fun navigateToNext(navController: NavHostController, sessionManager: SessionManager) {
-    navController.navigate(AppDestination.Onboarding)
-    if (sessionManager.isLoggedIn()){
-        navController.navigate(AppDestination.MainScreen)
-//      navController.navigate(AppDestination.ProfileCompletion)
-    }else{
+    if (sessionManager.isLoggedIn()) {
+        navController.navigate(AppDestination.MainScreen) {
+            popUpTo(AppDestination.Splash) { inclusive = true }
+        }
+    } else {
         navController.navigate(AppDestination.Onboarding) {
             popUpTo(AppDestination.Splash) { inclusive = true }
         }

@@ -46,6 +46,7 @@ import com.bussiness.curemegptapp.R
 import com.bussiness.curemegptapp.apimodel.medication.Medication
 import com.bussiness.curemegptapp.apimodel.medication.MedicationTime
 import com.bussiness.curemegptapp.ui.component.GradientRedButton
+import com.bussiness.curemegptapp.util.DateUtils
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -324,26 +325,26 @@ fun MedicationsCard( medication: Medication,
                         modifier = Modifier.size(29.dp)
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
 
                     Text(
-                        text = "${medication.startDate}",
+                        text = DateUtils.formatToDisplay(medication.startDate),
                         fontSize = 14.sp,
                         color = Color.Black,
                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                         fontWeight = FontWeight.Normal
                     )
-                    Spacer(modifier = Modifier.width(18.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
 
                     Image(
                         painter = painterResource(id = R.drawable.ic_strt_end),
                         contentDescription = null,
                         modifier = Modifier.size(29.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
 
                     Text(
-                        text = "${medication.endDate}",
+                        text = DateUtils.formatToDisplay(medication.endDate),
                         fontSize = 14.sp,
                         color = Color.Black,
                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),

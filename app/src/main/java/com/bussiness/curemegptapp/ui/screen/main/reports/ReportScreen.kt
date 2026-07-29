@@ -3,8 +3,10 @@ package com.bussiness.curemegptapp.ui.screen.main.reports
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -39,16 +41,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.bussiness.curemegptapp.R
 import com.bussiness.curemegptapp.ui.component.DocumentItem2
 import com.bussiness.curemegptapp.ui.component.PriorityImageTag
 import com.bussiness.curemegptapp.ui.component.TopBarHeader2
+import com.bussiness.curemegptapp.util.AppsFlyerLinkManager
+import com.bussiness.curemegptapp.util.DateUtils
 import com.bussiness.curemegptapp.viewmodel.reportviewmodel.ReportViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: ReportViewModel = hiltViewModel()) {
+fun ReportScreen(
+    navController: NavHostController,
+    id: String? = "",
+    viewModel: ReportViewModel = hiltViewModel(),
+) {
 
 
     Log.d("ReportScreen", "Displaying report with ID: $id")
@@ -205,7 +215,7 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = state?.chat_date?:"",
+                            text = DateUtils.formatToDisplay( state?.chat_date?:""),
                             fontSize = 16.sp,
                             color = Color.Black,
                             fontFamily = FontFamily(Font(R.font.urbanist_medium)),
@@ -263,28 +273,32 @@ fun ReportScreen(navController: NavHostController,id: String? = "",viewModel: Re
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
 
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_share_icon),
-                                contentDescription = null,
-                                modifier = Modifier.size(45.dp).clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    val report = state
-                                    if (report == null) {
-                                        Toast.makeText(context, "Report details are not loaded yet", Toast.LENGTH_SHORT).show()
-                                        return@clickable
-                                    }
+                    val context = LocalContext.current
 
-                                    viewModel.shareReportPdf(
-                                        context = context,
-                                        id = id?.toIntOrNull() ?: 0,
-                                        error = { msg ->
-                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                        }
-                                    )
-                                },
-                            )
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_share_icon),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(45.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+
+                                val link = AppsFlyerLinkManager.generateReportLink(
+                                    reportId = id.toString(),
+                                )
+
+                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, link)
+                                }
+
+                                context.startActivity(
+                                    Intent.createChooser(shareIntent, "Share Report")
+                                )
+                            }
+                    )
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Image(
@@ -510,10 +524,11 @@ fun InsightRow(label: String, value: String) {
 
 
 
+/*
 @SuppressLint("SuspiciousIndentation")
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ReportScreenPreview() {
     val navController = rememberNavController()
-        ReportScreen(navController)
-}
+        ReportScreen(navController,)
+}*/

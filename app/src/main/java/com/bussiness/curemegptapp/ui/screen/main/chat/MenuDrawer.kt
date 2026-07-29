@@ -24,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -50,31 +49,25 @@ import androidx.compose.ui.unit.sp
 import com.bussiness.curemegptapp.R
 import com.bussiness.curemegptapp.apimodel.chatModel.ChatHistoryItem
 import com.bussiness.curemegptapp.apimodel.chatModel.FamilyDetails
-import com.bussiness.curemegptapp.apimodel.scheduleAppointment.FamilyModel
 import com.bussiness.curemegptapp.ui.component.LayerShadowBlueButton
-import com.bussiness.curemegptapp.ui.screen.main.schedule.EditDeleteMenu
-import com.bussiness.curemegptapp.ui.theme.gradientBrush
 import android.util.Log
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.style.TextOverflow
-import coil.compose.AsyncImage
-import com.bussiness.curemegptapp.util.AppConstant
-import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun MenuDrawer(
-               onDismiss: () -> Unit,
-               selectedUser: String, onUserChange: (FamilyDetails) -> Unit,
-               onClickNewCaseChat:()-> Unit,
-               familyList: List<FamilyDetails>,
-               chatHistory : MutableList<ChatHistoryItem>,
-               onRenameClick: (id :String, title :String) -> Unit,
-               onDeleteClick: (id:String) -> Unit,
-               onShareClick :() ->Unit,
-               onChatHistoryClick :(id:Int, type:String) ->Unit,
-               onNewChatClick : ()->Unit,
-               isCaseChat: Boolean = false
-               ) {
+    onDismiss: () -> Unit,
+    selectedUser: String, onUserChange: (FamilyDetails) -> Unit,
+    onClickNewCaseChat: () -> Unit,
+    familyList: List<FamilyDetails>,
+    chatHistory: MutableList<ChatHistoryItem>,
+    onRenameClick: (id: String, title: String) -> Unit,
+    onDeleteClick: (id: String) -> Unit,
+    onShareClick: (ChatHistoryItem) -> Unit,
+    onChatHistoryClick: (id: Int, type: String) -> Unit,
+    onNewChatClick: () -> Unit,
+    isCaseChat: Boolean = false,
+) {
 
     Log.d("ChatHistory", "chatHistory size = ${chatHistory.size}")
 
@@ -303,10 +296,12 @@ fun MenuDrawer(
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.width(10.dp))
+
                         Icon(
                             painter = painterResource(if (showCategoryDropdown) R.drawable.ic_dropdown_show else R.drawable.ic_dropdown_icon),
                             contentDescription = null
                         )
+
                     }
 
                     if (showCategoryDropdown) {
@@ -525,7 +520,7 @@ fun MenuDrawer(
                                 RenameDeleteShareMenu(
                                     modifier = Modifier,
                                     onEditClick = { onRenameClick(chatItem.id ?: "0", chatItem.title ?: "") },
-                                    onShareClick = { onShareClick() },
+                                    onShareClick = { onShareClick(chatItem) },
                                     onDeleteClick = { onDeleteClick(chatItem.id ?: "0") }
                                 )
                             }

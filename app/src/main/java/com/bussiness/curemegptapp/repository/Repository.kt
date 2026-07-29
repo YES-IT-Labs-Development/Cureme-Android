@@ -25,6 +25,7 @@ import com.bussiness.curemegptapp.apimodel.reportmodel.ReportModel
 import com.bussiness.curemegptapp.apimodel.scheduleAppointment.AppointmentTypeModel
 import com.bussiness.curemegptapp.apimodel.scheduleAppointment.FamilyModel
 import com.bussiness.curemegptapp.data.model.ChatMessage
+import com.bussiness.curemegptapp.data.model.MoodSummaryData
 import com.bussiness.curemegptapp.data.model.ProfileData
 import com.bussiness.curemegptapp.ui.viewModel.main.FamilyMember
 import com.google.gson.JsonObject
@@ -359,4 +360,6 @@ interface Repository {
     fun viewSummary(chatId: Int): Flow<NetworkResult<com.bussiness.curemegptapp.apimodel.chatModel.SummaryData?>>
 
     fun deleteAccount(feedback: String): Flow<NetworkResult<String>>
+
+    fun moodResponse(mood: String): Flow<NetworkResult<MoodSummaryData>>
 }

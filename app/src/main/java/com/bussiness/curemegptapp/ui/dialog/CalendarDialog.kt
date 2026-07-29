@@ -179,7 +179,7 @@ fun CalendarDialog(
                             paddingHorizontal = 2.dp,
                             onClick = {
                                 selectedDate.value?.let {
-                                    val formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy")
+                                    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
                                     onDateApplied(it.format(formatter))
                                 }
                             },

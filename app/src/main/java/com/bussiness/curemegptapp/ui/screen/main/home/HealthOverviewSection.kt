@@ -402,7 +402,7 @@ fun UserHealthCard(
                             text = if (profile?.name?.contains("Myself", ignoreCase = true) == true) {
                                 "Self"
                             } else {
-                                "family"
+                                profile?.relationship ?: ""
                             },
                             fontSize = 12.sp,
                             color = Color(0xFF374151),

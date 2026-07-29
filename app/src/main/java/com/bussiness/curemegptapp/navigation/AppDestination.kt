@@ -75,7 +75,9 @@ sealed class AppDestination {
     data object MyProfileScreen : AppDestination()
 
     @Serializable
-    data object ReportScreen : AppDestination()
+    data class ReportScreen(
+        val id: String
+    ) : AppDestination()
 
     @Serializable
     data object SettingsScreen : AppDestination()

@@ -1,6 +1,8 @@
 package com.bussiness.curemegptapp.ui.screen.main.schedule
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -41,7 +43,9 @@ import com.bussiness.curemegptapp.ui.component.GradientRedButton
 import com.bussiness.curemegptapp.ui.component.GradientViewSummaryButton
 import com.bussiness.curemegptapp.ui.dialog.AlertCardDialog
 import com.bussiness.curemegptapp.ui.viewModel.main.AppointmentUIModel
+import com.bussiness.curemegptapp.util.DateUtils
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppointmentCard(appointment: AppointmentUIModel, onEditClick: () -> Unit,
                     onDeleteClick: () -> Unit, onViewClick: () -> Unit,onCheckClick :() ->Unit) {
@@ -146,7 +150,7 @@ fun AppointmentCard(appointment: AppointmentUIModel, onEditClick: () -> Unit,
                         )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = appointment.date,
+                        text = DateUtils.formatToDisplay(appointment.date),
                         fontSize = 14.sp,
                         color = Color.Black,
                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),

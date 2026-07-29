@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 
 import com.bussiness.curemegptapp.ui.screen.main.schedule.HealthScheduleScreen
 import com.bussiness.curemegptapp.ui.screen.main.thingNeedingAttention.ThingNeedingAttentionScreen
@@ -117,14 +118,14 @@ fun MainNavGraph(
             ReportScreen(navController)
         }*/
 
-        composable(
-            route = "${AppDestination.ReportScreen}?id={id}",
-            arguments = listOf(
-                navArgument("id") { defaultValue = "" }
+        composable<AppDestination.ReportScreen> { backStackEntry ->
+
+            val args = backStackEntry.toRoute<AppDestination.ReportScreen>()
+
+            ReportScreen(
+                navController = navController,
+                id = args.id,
             )
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id") ?: ""
-            ReportScreen(navController, id)
         }
 
 

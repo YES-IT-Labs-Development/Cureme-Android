@@ -1,6 +1,6 @@
 [versions]
 accompanistPermissionsVersion = "0.36.0"
-afAndroidSdkVersion = "7.0.1"
+afAndroidSdkVersion = "6.17.5"
 agp = "8.10.1"
 coilCompose = "2.6.0"
 kotlin = "2.0.21"
@@ -26,6 +26,7 @@ firebaseCrashlyticsVersion = "19.0.0"
 firebaseAnalyticsVersion = "22.0.0"
 runtimeVersion = "1.10.5"
 runtime = "1.10.6"
+animationCoreVersion = "1.11.4"
 
 [libraries]
 accompanist-permissions-v0360 = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissionsVersion" }
@@ -61,6 +62,7 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics", version.ref = "firebaseAnalyticsVersion" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
+androidx-compose-animation-core = { group = "androidx.compose.animation", name = "animation-core", version.ref = "animationCoreVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

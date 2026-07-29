@@ -34,6 +34,7 @@ import com.bussiness.curemegptapp.apimodel.reportmodel.ReportModel
 import com.bussiness.curemegptapp.apimodel.scheduleAppointment.AppointmentTypeModel
 import com.bussiness.curemegptapp.apimodel.scheduleAppointment.FamilyModel
 import com.bussiness.curemegptapp.data.model.ChatMessage
+import com.bussiness.curemegptapp.data.model.MoodSummaryData
 import com.bussiness.curemegptapp.data.model.PdfData
 import com.bussiness.curemegptapp.data.model.ProfileData
 import com.bussiness.curemegptapp.ui.viewModel.main.Document
@@ -2494,6 +2495,29 @@ class RepositoryImpl @Inject constructor(
                     }
                 } else {
                     emit(NetworkResult.Error(AppConstant.serverError))
+                }
+            } else {
+                emit(NetworkResult.Error(AppConstant.serverError))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(NetworkResult.Error(AppConstant.serverError))
+        }
+    }.flowOn(Dispatchers.IO)
+
+
+    override fun moodResponse(mood: String): Flow<NetworkResult<MoodSummaryData>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val response = api.moodResponse(mood)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null && body.success && body.data != null) {
+                    // null-check ke baad smart-cast se body.data non-null ban jata hai,
+                    // isliye NetworkResult.Success<MoodSummaryData> ke saath type match ho jata hai
+                    emit(NetworkResult.Success(body.data))
+                } else {
+                    emit(NetworkResult.Error(body?.message ?: AppConstant.serverError))
                 }
             } else {
                 emit(NetworkResult.Error(AppConstant.serverError))

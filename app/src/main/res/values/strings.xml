@@ -49,7 +49,7 @@
     <string name="email_label">Email Address</string>
     <string name="email_placeholder">james@gmail.com</string>
     <string name="date_of_birth_label">Date of Birth</string>
-    <string name="date_of_birth_placeholder">MM-DD-YYYY</string>
+    <string name="date_of_birth_placeholder">dd MMM yyyy</string>
     <string name="gender_label">Gender</string>
     <string name ="relation">Relation</string>
     <string name="gender_male">Male</string>

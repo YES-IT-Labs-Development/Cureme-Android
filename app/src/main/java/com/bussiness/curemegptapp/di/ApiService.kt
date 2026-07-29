@@ -12,6 +12,7 @@ import com.bussiness.curemegptapp.apimodel.profilemodel.DeleteMedicalDocRequest
 import com.bussiness.curemegptapp.apimodel.profilemodel.UserProfileResponse
 import com.bussiness.curemegptapp.apimodel.reportdetailmodel.ReportDetailsModel
 import com.bussiness.curemegptapp.apimodel.reportmodel.ReportModel
+import com.bussiness.curemegptapp.data.model.MoodSummaryResponse
 import com.google.gson.Gson
 import kotlinx.serialization.json.JsonObject
 import com.google.gson.JsonObject as GsonJsonObject
@@ -563,4 +564,11 @@ interface ApiService {
       suspend fun deleteAccountRequest(
           @Field("delete_account_feedback") feedback: String
       ) : Response<GsonJsonObject>
+
+    @FormUrlEncoded
+    @POST("get_today_mood")
+    suspend fun moodResponse(
+        @Field("today_mood") mood: String
+    ): Response<MoodSummaryResponse>
+
 }

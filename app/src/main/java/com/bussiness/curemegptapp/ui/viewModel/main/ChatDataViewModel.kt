@@ -64,7 +64,6 @@ class ChatDataViewModel @Inject constructor(
 
     val historyChatList: StateFlow<MutableList<ChatHistoryItem>> = _historyChatList
 
-
     private lateinit var context: Context
 
     private val _chatArgs = MutableStateFlow(ChatScreenArgs())
@@ -185,7 +184,6 @@ class ChatDataViewModel @Inject constructor(
                 iconResId = R.drawable.ic_profile,
                 description = "Academic writing and research"
             )
-
         )
     }
 

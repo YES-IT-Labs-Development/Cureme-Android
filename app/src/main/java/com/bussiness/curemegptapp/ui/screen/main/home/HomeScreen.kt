@@ -46,6 +46,7 @@ import com.bussiness.curemegptapp.util.AppConstant
 import com.bussiness.curemegptapp.util.AppSessionState
 import kotlinx.coroutines.delay
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.bussiness.curemegptapp.util.DeepLinkManager
 
 @Composable
 fun HomeScreen(
@@ -56,6 +57,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val uiStateHome by viewModel.uiStateHome.collectAsState()
     val selectedMood by viewModel.selectedMood
+    val summary by viewModel.moodSummaryUiState.collectAsState()
     val context = LocalContext.current
     val sessionManager = SessionManager.getInstance(context)
     val activity = context as? Activity
@@ -69,6 +71,22 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         viewModel.getHomeRequest()
+    }
+
+    LaunchedEffect(Unit) {
+
+        DeepLinkManager.deepLinkData.collect { data ->
+
+            data ?: return@collect
+
+            if (data.deepLinkType == "report") {
+
+                navController.navigate(
+                    AppDestination.ReportScreen(data.reportId.toString())
+                )
+                DeepLinkManager.clear()
+            }
+        }
     }
 
     val profileCompletion = uiStateHome?.user_context?.profile_completion
@@ -189,26 +207,27 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            if (showMoodCard) {
-                DailyMoodCheckCard(
-                    selectedMood = selectedMood,
-                    onMoodSelected = { mood -> viewModel.updateMood(mood)
-                        Toast.makeText(
-                            context,
-                            "Thanks for giving your daily mood check 😊",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        SessionManager(context).saveMoodDate(context)
-                        showMoodCard = false
-                    },
-                    onClose = {
-                        showMoodCard = false
-                    },
-                    onSkip = {
-                        showMoodCard = false
-                    }
-                )
-            }
+            DailyMoodCheckCard(
+                selectedMood = selectedMood,
+                moodTitle = summary.title ?: "",
+                moodDescription = summary.summary ?: "",
+                isLoading = summary.isLoading,
+                onMoodSelected = { mood ->
+                    viewModel.updateMood(mood)
+                    Toast.makeText(
+                        context,
+                        "Thanks for giving your daily mood check 😊",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    SessionManager(context).saveMoodDate(context)
+                },
+                onClose = {
+                    showMoodCard = false
+                },
+                onSkip = {
+                    showMoodCard = false
+                }
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 

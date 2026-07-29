@@ -1,5 +1,6 @@
 package com.bussiness.curemegptapp.ui.screen.main.chat
 
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -59,17 +60,16 @@ import com.bussiness.curemegptapp.ui.viewModel.main.ChatViewModel
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import com.bussiness.curemegptapp.apimodel.chatModel.ChatHistoryItem
 import com.bussiness.curemegptapp.apimodel.chatModel.FamilyDetails
 import com.bussiness.curemegptapp.data.model.ChatMessage
-import com.bussiness.curemegptapp.ui.theme.AppGradientColors
 import com.bussiness.curemegptapp.ui.viewModel.main.PromptViewModel
-import com.bussiness.curemegptapp.ui.dialog.ShareChatDialog
+import com.bussiness.curemegptapp.util.AppsFlyerLinkManager
 import java.util.Calendar
 
 @Composable
@@ -183,6 +183,10 @@ fun OpenChatScreen(
         }
     }
 
+    var selectedChatItem by remember {
+        mutableStateOf<ChatHistoryItem?>(null)
+    }
+
     RightSideDrawer(
         drawerState = showDrawer,
         onClose = { showDrawer = false },
@@ -219,15 +223,17 @@ fun OpenChatScreen(
                     chatToRename = id to newName
                     showRenameSheet = true
                 },
-                onShareClick = {
-                    showShareDialog = true
-                    showDrawer = false
-                }, onDeleteClick = { id ->
+                onDeleteClick = { id ->
                     viewModel.deleteChat(id, {
                         Toast.makeText(context, "Chat Deleted Successfully", Toast.LENGTH_LONG)
                             .show()
                         showDrawer = false
                     })
+                },
+                onShareClick = { chatItem ->
+                    showShareDialog = true
+                    selectedChatItem = chatItem
+                    showDrawer = false
                 },
                 onChatHistoryClick = { id, type ->
                     val message = ChatMessage(text = "", isUser = true)
@@ -264,7 +270,7 @@ fun OpenChatScreen(
                     handle?.set("familyList", familyList)
                     handle?.set("chatHistory", false)
                     navController.navigate(AppDestination.ChatDataScreen)
-                }
+                },
             )
         }
     ) {
@@ -570,10 +576,49 @@ fun OpenChatScreen(
                 )
             }
 
-            if (showShareDialog) {
-                ShareChatDialog(
-                    onDismiss = { showShareDialog = false }
-                )
+            val context = LocalContext.current
+
+            LaunchedEffect(showShareDialog) {
+
+                if (!showShareDialog) return@LaunchedEffect
+
+                val chatId = selectedChatItem?.id
+                val familyId = selectedUser?.id
+                val types = selectedChatItem?.type.orEmpty()
+
+                val link = if (!chatId.isNullOrEmpty()) {
+                    AppsFlyerLinkManager.generateChatLink(
+                        chatId = chatId,
+                        familyMemberID = "0",
+                        type = types,
+                        chatHistory = true
+                    )
+                } else {
+                    AppsFlyerLinkManager.generateChatLink(
+                        chatId = "0",
+                        familyMemberID = familyId.toString(),
+                        type = types,
+                        chatHistory = true
+                    )
+                }
+
+                if (link.isNotBlank()) {
+
+                    val shareIntent = Intent.createChooser(
+                        Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                "Join me on CureMe AI\n\n$link"
+                            )
+                        },
+                        "Share via"
+                    )
+
+                    context.startActivity(shareIntent)
+                }
+
+                showShareDialog = false
             }
         }
     }

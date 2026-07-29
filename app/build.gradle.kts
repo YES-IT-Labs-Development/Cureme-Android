@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.androidx.runtime)
 
     implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.compose.animation.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -151,7 +152,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.1.1")
 
     //appsflyer
-    implementation(libs.af.android.sdk)
+//    implementation(libs.af.android.sdk)
+    implementation("com.appsflyer:af-android-sdk:7.0.1")
 
 //    // firebase
 //    implementation(platform(libs.firebase.bom))

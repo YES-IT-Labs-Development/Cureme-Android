@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.bussiness.curemegptapp.apimodel.homemodel.Data
 import com.bussiness.curemegptapp.apimodel.homemodel.Family
 import com.bussiness.curemegptapp.apimodel.homemodel.FamilyX
+import com.bussiness.curemegptapp.repository.NetworkResult
 import com.bussiness.curemegptapp.repository.Repository
 import com.bussiness.curemegptapp.repository.Resource
 import com.bussiness.curemegptapp.util.LoaderManager
@@ -24,12 +25,12 @@ class HomeViewModel @Inject constructor(private val repository: Repository,
                                         private val sessionManager: SessionManager) : ViewModel() {
 
 
-
     private val _uiStateHome = MutableStateFlow<Data?>(null)
     val uiStateHome = _uiStateHome.asStateFlow()
 
     private var originalRecommendedSteps: List<String> = emptyList()
-
+    private val _moodSummaryUiState = MutableStateFlow(MoodSummaryUiState())
+    val moodSummaryUiState: StateFlow<MoodSummaryUiState> = _moodSummaryUiState.asStateFlow()
     private fun updateRecommendedStepsForSelectedProfile(data: Data) {
         val selectedProfile = data.healthList?.firstOrNull { it.isSelected == true }
             ?: data.healthList?.firstOrNull()
@@ -74,10 +75,11 @@ class HomeViewModel @Inject constructor(private val repository: Repository,
                         is Resource.Loading -> {
                             LoaderManager.show()
                         }
+
                         is Resource.Success -> {
                             LoaderManager.hide()
-                            val healthList: MutableList<Family>  = mutableListOf()
-                            val needAttentionList: MutableList<FamilyX>  = mutableListOf()
+                            val healthList: MutableList<Family> = mutableListOf()
+                            val needAttentionList: MutableList<FamilyX> = mutableListOf()
                             healthList.clear()
                             needAttentionList.clear()
                             result.data.data?.let { data ->
@@ -105,31 +107,38 @@ class HomeViewModel @Inject constructor(private val repository: Repository,
                                     }
                                 }
                                 data.members_details?.myself?.let { myself ->
-                                    healthList.add(Family(
-                                        id = 0,
-                                        name = (myself.name?:"" )+ " (Myself)",
-                                        dob = myself.dob?:"",
-                                        isSelected =true,
-                                        profile_image = myself.profile_image?:"",
-                                        active_alerts = myself.active_alerts,
-                                        last_appointment_days_ago = myself.last_appointment_days_ago))
+                                    healthList.add(
+                                        Family(
+                                            id = 0,
+                                            name = (myself.name ?: "") + " (Myself)",
+                                            dob = myself.dob ?: "",
+                                            isSelected = true,
+                                            profile_image = myself.profile_image ?: "",
+                                            active_alerts = myself.active_alerts,
+                                            relationship = "Self",
+                                            last_appointment_days_ago = myself.last_appointment_days_ago
+                                        )
+                                    )
                                 }
-                                data.members_details?.family?.let { familyList->
+                                data.members_details?.family?.let { familyList ->
                                     healthList.addAll(familyList)
                                 }
-                                data.healthList= healthList
-                                data.needAttentionList= needAttentionList
-                                
+                                data.healthList = healthList
+                                data.needAttentionList = needAttentionList
+
                                 // Store original recommended steps and update based on default (myself) profile
-                                originalRecommendedSteps = data.recommended_next_steps ?: emptyList()
+                                originalRecommendedSteps =
+                                    data.recommended_next_steps ?: emptyList()
                                 updateRecommendedStepsForSelectedProfile(data)
 
                                 _uiStateHome.value = data
                             }
                         }
+
                         is Resource.Error -> {
                             LoaderManager.hide()
                         }
+
                         Resource.Idle -> Unit
                     }
                 }
@@ -150,11 +159,6 @@ class HomeViewModel @Inject constructor(private val repository: Repository,
         updateRecommendedStepsForSelectedProfile(updatedData)
         _uiStateHome.value = updatedData
     }
-
-
-
-
-
 
 
     // UI State
@@ -178,9 +182,9 @@ class HomeViewModel @Inject constructor(private val repository: Repository,
         "Annual checkup due"
     )
 
-    private   val attentionItems = listOf(
-        Triple("Tooth Pain Symptoms Detected", "For: James Logan",true),
-        Triple("Overdue Dental Cleaning", "For: Rosy Logan",true)
+    private val attentionItems = listOf(
+        Triple("Tooth Pain Symptoms Detected", "For: James Logan", true),
+        Triple("Overdue Dental Cleaning", "For: Rosy Logan", true)
 
 
     )
@@ -223,14 +227,9 @@ class HomeViewModel @Inject constructor(private val repository: Repository,
             allergies = initialAllergies,
             recommendedSteps = initialSteps,
             alerts = initialAlerts,
-           // attentionItems = attentionItems,
+            // attentionItems = attentionItems,
             attentionItems = initialAttentionItems
         )
-    }
-
-    fun updateMood(mood: String) {
-        _selectedMood.value = mood
-        // Yahan API call kar sakte hain mood update karne ke liye
     }
 
     fun removeLocalAlert(symptom: String) {
@@ -238,67 +237,46 @@ class HomeViewModel @Inject constructor(private val repository: Repository,
         getHomeRequest()
     }
 
-    fun scheduleAttentionItem(itemId: Int) {
+    fun updateMood(mood: String) {
+        _selectedMood.value = mood
+        LoaderManager.show()
         viewModelScope.launch {
-            // Future API implementation for scheduling
-            // repository.scheduleAttentionItem(itemId)
+            repository.moodResponse(mood.lowercase()).collectLatest { result ->
+                LoaderManager.hide()
+                when (result) {
+                    is NetworkResult.Loading -> {
+                        _moodSummaryUiState.value = _moodSummaryUiState.value.copy(
+                            isLoading = true,
+                            error = null
+                        )
+                    }
 
-            // For now, just update UI state
-            val currentItems = _uiState.value.attentionItems
-            val updatedItems = currentItems.map { item ->
-                if (item.id == itemId) {
-                    item.copy(isScheduled = true)
-                } else {
-                    item
+                    is NetworkResult.Success -> {
+                        val moodData = result.data
+
+                        if (moodData != null) {
+                            _moodSummaryUiState.value = MoodSummaryUiState(
+                                isLoading = false,
+                                title = moodData.title,
+                                summary = moodData.summary,
+                                error = null
+                            )
+                        } else {
+                            _moodSummaryUiState.value = _moodSummaryUiState.value.copy(
+                                isLoading = false,
+                                error = "Something went wrong"
+                            )
+                        }
+                    }
+
+                    is NetworkResult.Error -> {
+                        _moodSummaryUiState.value = _moodSummaryUiState.value.copy(
+                            isLoading = false,
+                            error = result.message ?: "Something went wrong"
+                        )
+                    }
                 }
             }
-
-            _uiState.value = _uiState.value.copy(
-                attentionItems = updatedItems
-            )
-        }
-    }
-
-    fun markAttentionItemAsResolved(itemId: Int) {
-        viewModelScope.launch {
-            // Future API implementation
-            // repository.markAsResolved(itemId)
-
-            // Update UI state
-            val currentItems = _uiState.value.attentionItems
-            val updatedItems = currentItems.filter { it.id != itemId }
-
-            _uiState.value = _uiState.value.copy(
-                attentionItems = updatedItems
-            )
-        }
-    }
-
-    fun addNewAttentionItem(title: String, subtitle: String, isUrgent: Boolean, forPerson: String) {
-        val newItem = AttentionItem(
-            id = (_uiState.value.attentionItems.maxOfOrNull { it.id } ?: 0) + 1,
-            title = title,
-            subtitle = subtitle,
-            isUrgent = isUrgent,
-            forPerson = forPerson
-        )
-
-        val updatedItems = _uiState.value.attentionItems + newItem
-
-        _uiState.value = _uiState.value.copy(
-            attentionItems = updatedItems
-        )
-    }
-
-    fun refreshData() {
-        viewModelScope.launch {
-            // Future API implementation:
-            // try {
-            //     val homeData = repository.getHomeData()
-            //     _uiState.value = homeData
-            // } catch (e: Exception) {
-            //     // Handle error
-            // }
         }
     }
 }
@@ -329,4 +307,10 @@ data class AttentionItem(
     val dueDate: String = "" // For future API integration
 )
 
+data class MoodSummaryUiState(
+    val isLoading: Boolean = false,
+    val title: String? = null,
+    val summary: String? = null,
+    val error: String? = null
+)
 

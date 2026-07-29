@@ -5,6 +5,7 @@ data class Family(
     val dob: String?,
     val id: Int?,
     val name: String?,
+    val relationship: String,
     val isSelected: Boolean?=false,
     val profile_image: String?,
     val last_appointment_days_ago: Int? = null

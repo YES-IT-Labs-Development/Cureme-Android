@@ -1,13 +1,9 @@
 package com.bussiness.curemegptapp.ui.screen.main.chat
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -28,8 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -54,6 +47,7 @@ import com.bussiness.curemegptapp.ui.component.input.RightSideDrawer
 import com.bussiness.curemegptapp.ui.dialog.DeleteChatDialog
 import com.bussiness.curemegptapp.ui.dialog.ShareChatDialog
 import com.bussiness.curemegptapp.ui.dialog.SwitchToDialog
+import com.bussiness.curemegptapp.util.AppsFlyerLinkManager
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
@@ -74,22 +68,22 @@ fun ChatDataScreen(
     val context = LocalContext.current
     var showRenameSheet by remember { mutableStateOf(false) }
     var chatToRename by remember { mutableStateOf<Pair<String, String>?>(null) }
-    
-    
-    
 
     val chatHistoryList by viewModel.historyChatList.collectAsState()
+    val isFromDeepLink = handle?.get<Boolean>("isFromDeepLink") ?: false
 
     Log.d("ChatScreen", "familyMemberId: $familyMemberId")
     Log.d("ChatScreen", "chatHistory: $chatHistory")
     Log.d("ChatScreen", "chatId: $chatId")
 
-    LaunchedEffect(Unit) {
+    /*LaunchedEffect(Unit) {
         if (!isInitialized) {
             viewModel.setChatArgs(
                 context = context, chatId = chatId, familyMemberId = familyMemberId,
                 chatMessage = chatMessage, type = type, familyList = familyList
             )
+            Timber.tag("ShareLink").d("chatId = $chatId")
+            Log.d("ShareLink", "familyMemberId = $familyMemberId")
             if (!chatHistory) {
                 viewModel.onChatScreenOpened(
                     chatId = chatId,
@@ -101,6 +95,32 @@ fun ChatDataScreen(
                 )
             } else {
                 viewModel.getChatHistoryData(chatId, type)
+            }
+            currentHandle?.set("isInitialized", true)
+        }
+    }*/
+
+    LaunchedEffect(Unit) {
+        if (!isInitialized) {
+            viewModel.setChatArgs(
+                context = context, chatId = chatId, familyMemberId = familyMemberId,
+                chatMessage = chatMessage, type = type, familyList = familyList
+            )
+
+
+            if (chatId != 0) {
+
+                viewModel.getChatHistoryData(chatId, type)
+            } else {
+                // new chat — message
+                viewModel.onChatScreenOpened(
+                    chatId = chatId,
+                    type = type,
+                    message = chatMessage?.text,
+                    familyMemberId = familyMemberId,
+                    images = chatMessage?.images ?: emptyList(),
+                    pdfs = chatMessage?.pdfs ?: emptyList()
+                )
             }
             currentHandle?.set("isInitialized", true)
         }
@@ -182,7 +202,7 @@ fun ChatDataScreen(
                     showDrawer = false
                 },
                 familyList = familyList,
-                chatHistory = chatHistoryList,   // mutableListOf() ki jagah actual list
+                chatHistory = chatHistoryList,
                 onRenameClick = {
                     id, newName -> chatToRename = id to newName
                     showRenameSheet = true
@@ -319,7 +339,8 @@ fun ChatDataScreen(
                         state = uiState,
                         viewModel = viewModel,
                         familyList = chatArgs.familyList,
-                        familyMemberId = chatArgs.familyMemberId
+                        familyMemberId = chatArgs.familyMemberId,
+                        isSelectionLocked = isFromDeepLink
                     )
 
                 }
@@ -409,8 +430,16 @@ fun ChatDataScreen(
     }
 
     if (showShareDialog) {
+        val link = AppsFlyerLinkManager.generateChatLink(
+            chatArgs.familyMemberId.toString(),
+            chatArgs.chatId.toString(),
+            chatArgs.type,
+            chatHistory
+        )
+        Toast.makeText(context, chatArgs.chatId.toString(), Toast.LENGTH_LONG).show()
         ShareChatDialog(
-            onDismiss = { showShareDialog = false }
+            onDismiss = { showShareDialog = false },
+            shareLink = link
         )
     }
 

@@ -32,10 +32,15 @@ import com.bussiness.curemegptapp.ui.screen.settingsScreens.TermsAndConditionsSc
 import com.bussiness.curemegptapp.ui.screen.main.addFamilyMemberScreen.AddFamilyMemberScreen
 import com.bussiness.curemegptapp.ui.screen.main.chat.ChatDataScreen
 import com.bussiness.curemegptapp.ui.screen.main.chat.OpenChatScreen
+import com.bussiness.curemegptapp.ui.screen.main.reports.ReportScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AppNavGraph(navController: NavHostController,modifier : Modifier = Modifier) {
+fun AppNavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    isDeepLinkPending: Boolean = false
+) {
     Box(
         modifier = modifier.fillMaxSize().background(Color.White).statusBarsPadding().navigationBarsPadding()
 
@@ -45,7 +50,9 @@ fun AppNavGraph(navController: NavHostController,modifier : Modifier = Modifier)
             startDestination = AppDestination.Splash
         ) {
 
-            composable<AppDestination.Splash> { SplashScreen(navController) }
+            composable<AppDestination.Splash> {
+                SplashScreen(navController)   //  pass kiya
+            }
             composable<AppDestination.Onboarding> { OnboardingScreen(navController) }
             composable<AppDestination.Login> { LoginScreen(navController) }
 
@@ -59,7 +66,6 @@ fun AppNavGraph(navController: NavHostController,modifier : Modifier = Modifier)
                 ResetScreen(navController, from)
             }
 
-            // composable<AppDestination.VerifyOtp> { VerifyOtpScreen(navController) }
             composable(
                 route = "verifyOtp?from={from}&email={email}",
                 arguments = listOf(
@@ -72,8 +78,6 @@ fun AppNavGraph(navController: NavHostController,modifier : Modifier = Modifier)
                 VerifyOtpScreen(navController, from, email)
             }
 
-
-//            composable<AppDestination.NewPassword> { NewPasswordScreen(navController,"auth","") }
             composable(route = "${AppDestination.NewPassword}?from={from}&email={email}",
                 arguments = listOf(
                     navArgument("from") { defaultValue = "" },
@@ -85,8 +89,6 @@ fun AppNavGraph(navController: NavHostController,modifier : Modifier = Modifier)
                 NewPasswordScreen(navController,from,email)
             }
 
-
-
             composable<AppDestination.CreateAccount> { CreateAccountScreen(navController) }
             composable<AppDestination.PrivacyConsent> { backStackEntry ->
                 val route = backStackEntry.toRoute<AppDestination.PrivacyConsent>()
@@ -97,8 +99,7 @@ fun AppNavGraph(navController: NavHostController,modifier : Modifier = Modifier)
 
             composable<AppDestination.ProfileCompletion> { ProfileCompletionScreen(navController) }
 
-           composable<AppDestination.MainScreen> { MainScreen(navController) }
-
+            composable<AppDestination.MainScreen> { MainScreen(navController) }
 
             composable(
                 route = "openChat?from={from}",
@@ -124,6 +125,15 @@ fun AppNavGraph(navController: NavHostController,modifier : Modifier = Modifier)
                 AddFamilyMemberScreen(navController, from)
             }
 
+            composable<AppDestination.ReportScreen> { backStackEntry ->
+
+                val args = backStackEntry.toRoute<AppDestination.ReportScreen>()
+
+                ReportScreen(
+                    navController = navController,
+                    id = args.id,
+                )
+            }
 
         }
     }

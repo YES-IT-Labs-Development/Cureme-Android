@@ -1,5 +1,17 @@
 package com.bussiness.curemegptapp.ui.component
 
+import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,12 +23,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -30,6 +50,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.bussiness.curemegptapp.R
 import coil.compose.AsyncImage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeHeader(
@@ -394,46 +418,114 @@ fun AttentionItem(
     }
 }
 
-
 @Composable
 fun MoodOptionSelectable(
-    icon: Int,
+    @DrawableRes icon: Int,
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
 
+    var animateBounce by remember { mutableStateOf(false) }
+
+    // ---------- ENTRANCE ANIMATION ----------
+    val entranceScale = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        entranceScale.animateTo(
+            targetValue = 1f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        )
+    }
+
+    // ---------- CLICK BOUNCE ----------
+    val scope = rememberCoroutineScope()
+
+    val clickScale by animateFloatAsState(
+        targetValue = when {
+            animateBounce -> 1.35f
+            isSelected -> 1.15f
+            else -> 1f
+        },
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "clickScale"
+    )
+
+    val rotation by animateFloatAsState(
+        targetValue = if (animateBounce) -10f else 0f,
+        animationSpec = spring(),
+        label = "rotation"
+    )
+
+    // ---------- CONTINUOUS PULSE WHEN SELECTED ----------
+    val infiniteTransition = rememberInfiniteTransition(label = "selectedPulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 700, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
+
+    val elevation by animateDpAsState(
+        targetValue = if (isSelected) 8.dp else 0.dp,
+        label = "elevation"
+    )
+
+    val interaction = remember { MutableInteractionSource() }
+
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(if (isSelected) Color.White else Color.Transparent)
-            .padding(horizontal = 8.dp)
-            .padding(top = 6.dp, bottom = 4.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(
+                if (isSelected) Color.White else Color.Transparent
+            )
+
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interaction,
                 indication = null
-            ) { onClick() },
+            ) {
+                animateBounce = true
+                onClick()
+                scope.launch {
+                    delay(250)
+                    animateBounce = false
+                }
+            }
+            .padding(vertical = 10.dp, horizontal = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Image(
-            painter = painterResource(id = icon),
-            contentDescription = label,
-            modifier = Modifier.size(40.dp)
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier
+                .size(if (isSelected) 48.dp else 42.dp)
+                .graphicsLayer {
+                    val combinedScale = entranceScale.value * clickScale * (if (isSelected) pulseScale else 1f)
+                    scaleX = combinedScale
+                    scaleY = combinedScale
+                    rotationZ = rotation
+                    alpha = entranceScale.value
+
+                    compositingStrategy = CompositingStrategy.Offscreen
+                }
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(Modifier.height(6.dp))
 
         Text(
             text = label,
             color = if (isSelected) Color(0xFF4338CA) else Color.White,
-            fontSize = 12.sp,
-            fontFamily = FontFamily(Font(if (isSelected) R.font.urbanist_semibold else R.font.urbanist_medium)),
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            fontSize = if (isSelected) 14.sp else 13.sp
         )
     }
 }
-
-
-
-

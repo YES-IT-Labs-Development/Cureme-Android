@@ -1,7 +1,9 @@
 package com.bussiness.curemegptapp.ui.screen.main.healthReports
 
 import android.content.Intent
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -56,10 +58,13 @@ import com.bussiness.curemegptapp.ui.component.CommonHeader
 import com.bussiness.curemegptapp.ui.sheet.BottomSheetDialog
 import com.bussiness.curemegptapp.ui.sheet.BottomSheetDialogProperties
 import com.bussiness.curemegptapp.ui.sheet.FilterHealthReportsBottomSheet
+import com.bussiness.curemegptapp.util.AppsFlyerLinkManager
+import com.bussiness.curemegptapp.util.DateUtils
 import com.bussiness.curemegptapp.viewmodel.reportviewmodel.ReportViewModel
 
 //Health Reports
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewModel = hiltViewModel()) {
 
@@ -216,11 +221,13 @@ fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewMo
                             title = item.title?:"",
                             patientName = if (!item.user_name.isNullOrBlank()) item.user_name else (item.family_name ?: ""),
                             priority = (item.severity ?: "").replaceFirstChar { it.uppercase() },
-                            date = item.chat_date?:"",
+                            date = DateUtils.formatToDisplay(item.chat_date?:""),
                             note = item.ai_message?:"",
                             filesCount = item.files_count?:0,
                             onViewClick = {
-                                navController.navigate("${AppDestination.ReportScreen}?id=${item.chat_id}")
+                                navController.navigate(
+                                    AppDestination.ReportScreen(id = item.chat_id.toString())
+                                )
                             },
                             onShareClick = {
                                 viewModel.shareReportPdf(
@@ -230,6 +237,7 @@ fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewMo
                                         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                     }
                                 )
+
                             }
                         )
                     }

@@ -1,6 +1,5 @@
 package com.bussiness.curemegptapp.ui.component
 
-import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import android.content.Intent
@@ -9,7 +8,6 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -28,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,8 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.graphics.SolidColor
@@ -61,7 +56,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -73,9 +67,6 @@ import com.bussiness.curemegptapp.R
 import com.bussiness.curemegptapp.apimodel.chatModel.FamilyDetails
 import com.bussiness.curemegptapp.ui.viewModel.main.ChatDataViewModel
 import com.bussiness.curemegptapp.ui.viewModel.main.ChatInputState1
-import com.bussiness.curemegptapp.ui.viewModel.main.FakeChatDataViewModel
-import com.bussiness.curemegptapp.util.SpeechRecognizerManager
-import timber.log.Timber
 import coil.compose.AsyncImage
 import com.bussiness.curemegptapp.util.AppConstant
 import androidx.compose.ui.draw.clip
@@ -89,7 +80,8 @@ fun BottomMessageBar2(
     state: ChatInputState1 = ChatInputState1(), viewModel: ChatDataViewModel = hiltViewModel(),
     familyList: List<FamilyDetails> = emptyList<FamilyDetails>(),
     familyMemberId: Int,
-    onSendClicked: () -> Unit = { }
+    onSendClicked: () -> Unit = { },
+    isSelectionLocked: Boolean
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
@@ -280,7 +272,7 @@ fun BottomMessageBar2(
                                 .padding(horizontal = 10.dp)
                                 .padding(top = 30.dp)
                                 .clickable(
-                                    enabled = !isCaseChat,
+                                    enabled = !isCaseChat && !isSelectionLocked,
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) { showUserDropdown = !showUserDropdown },
@@ -322,7 +314,8 @@ fun BottomMessageBar2(
 
                                 val displayName = selectedMember?.let { member ->
                                     val isMyself = member.relationship?.trim()?.equals("myself", ignoreCase = true) == true
-                                    if (isMyself) {
+
+                                    if (isMyself && !isSelectionLocked) {
                                         "${member.name} (Myself)"
                                     } else {
                                         member.name
@@ -337,7 +330,7 @@ fun BottomMessageBar2(
                                     fontFamily = FontFamily(Font(R.font.urbanist_medium))
                                 )
 
-                                if (!isCaseChat) {
+                                if (!isCaseChat && !isSelectionLocked) {
                                     Image(
                                         painter = painterResource(
                                             if (showUserDropdown) R.drawable.ic_dropdown_show
