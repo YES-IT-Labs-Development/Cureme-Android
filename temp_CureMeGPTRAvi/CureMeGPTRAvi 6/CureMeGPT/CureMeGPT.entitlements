@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>aps-environment</key>
+	<string>development</string>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:share-chat.onelink.me</string>
+		<string>applinks:Ehr9.onelink.me</string>
+		<string>applinks:curemegpt.onelink.me</string>
+		<string>applinks:I4HT.onelink.me</string>
+	</array>
+</dict>
+</plist>
