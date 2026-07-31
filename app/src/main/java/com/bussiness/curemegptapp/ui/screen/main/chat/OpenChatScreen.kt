@@ -68,8 +68,10 @@ import androidx.compose.ui.text.withStyle
 import com.bussiness.curemegptapp.apimodel.chatModel.ChatHistoryItem
 import com.bussiness.curemegptapp.apimodel.chatModel.FamilyDetails
 import com.bussiness.curemegptapp.data.model.ChatMessage
+import com.bussiness.curemegptapp.ui.dialog.ShareChatDialog
 import com.bussiness.curemegptapp.ui.viewModel.main.PromptViewModel
 import com.bussiness.curemegptapp.util.AppsFlyerLinkManager
+import com.bussiness.curemegptapp.util.SessionManager
 import java.util.Calendar
 
 @Composable
@@ -89,6 +91,7 @@ fun OpenChatScreen(
     val scope = rememberCoroutineScope()
     var showRenameSheet by remember { mutableStateOf(false) }
     var chatToRename by remember { mutableStateOf<Pair<String, String>?>(null) }
+    val sessionManager : SessionManager = SessionManager.getInstance(context)
 
     val chatViewModel: ChatViewModel = hiltViewModel()
     val chatInputState by chatViewModel.uiState.collectAsState()
@@ -576,12 +579,7 @@ fun OpenChatScreen(
                 )
             }
 
-            val context = LocalContext.current
-
-            LaunchedEffect(showShareDialog) {
-
-                if (!showShareDialog) return@LaunchedEffect
-
+            if (showShareDialog){
                 val chatId = selectedChatItem?.id
                 val familyId = selectedUser?.id
                 val types = selectedChatItem?.type.orEmpty()
@@ -590,35 +588,26 @@ fun OpenChatScreen(
                     AppsFlyerLinkManager.generateChatLink(
                         chatId = chatId,
                         familyMemberID = "0",
+                        memberName = selectedUser?.name ?:"",
                         type = types,
-                        chatHistory = true
+                        chatHistory = true,
                     )
                 } else {
                     AppsFlyerLinkManager.generateChatLink(
                         chatId = "0",
                         familyMemberID = familyId.toString(),
+                        memberName = selectedUser?.name ?:"",
                         type = types,
-                        chatHistory = true
+                        chatHistory = true,
                     )
                 }
 
-                if (link.isNotBlank()) {
-
-                    val shareIntent = Intent.createChooser(
-                        Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(
-                                Intent.EXTRA_TEXT,
-                                "Join me on CureMe AI\n\n$link"
-                            )
-                        },
-                        "Share via"
-                    )
-
-                    context.startActivity(shareIntent)
-                }
-
-                showShareDialog = false
+                ShareChatDialog(
+                    onDismiss = {
+                        showShareDialog = false
+                    },
+                    shareLink = link
+                )
             }
         }
     }

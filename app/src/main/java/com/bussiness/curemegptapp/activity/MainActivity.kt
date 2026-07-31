@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,7 +37,10 @@ import com.bussiness.curemegptapp.util.DeepLinkManager
 import com.bussiness.curemegptapp.util.SessionManager
 import com.bussiness.curemegptapp.viewmodel.GlobalLoaderViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -46,6 +50,9 @@ class MainActivity : ComponentActivity() {
     lateinit var sessionManager: SessionManager
     @Inject
     lateinit var repository: Repository
+
+    // Track if we detected a deep link in the intent
+    private var isDeepLinkDetected by mutableStateOf(false)
 
     override fun onResume() {
         super.onResume()
@@ -60,6 +67,20 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        checkDeepLinkSignal(intent)
+    }
+
+    private fun checkDeepLinkSignal(intent: Intent?) {
+        val hasSignal = intent?.data != null
+
+        Log.d("DeepLink", "intent.data = ${intent?.data}")
+        Log.d("DeepLink", "hasSignal = $hasSignal")
+
+        isDeepLinkDetected = hasSignal
+
+        if (hasSignal) {
+            DeepLinkManager.startProcessing()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -67,23 +88,27 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // ✅ Deep link ka signal turant (synchronously) check karo — AppsFlyer intent mein af_deeplink extra daalta hai
-        val hasDeepLinkSignal = intent?.data != null ||
-                intent?.getBooleanExtra("af_deeplink", false) == true ||
-                intent?.extras?.keySet()?.any { it.startsWith("af_") } == true
+        checkDeepLinkSignal(intent)
 
         setContent {
             MaterialTheme {
                 val useDarkIcons = MaterialTheme.colorScheme.background.luminance() > 0.5f
                 SetStatusBarColor(color = Color.Transparent, darkIcons = useDarkIcons)
+
                 val mainNavController = rememberNavController()
                 val loaderViewModel: GlobalLoaderViewModel = hiltViewModel()
                 val isLoading by loaderViewModel.isLoading.collectAsState()
+
                 var showSessionDialog by remember { mutableStateOf(false) }
                 var activeFcmNotification by remember { mutableStateOf<FcmNotificationEvent?>(null) }
 
-                // ✅ Jab tak deep link process na ho jaye, dusra navigation (Home/session) rukega
-                var isDeepLinkPending by remember { mutableStateOf(hasDeepLinkSignal) }
+                // Reactive isDeepLinkPending state
+                val isAppsFlyerProcessing by DeepLinkManager.isProcessing.collectAsState()
+
+                // ✅ Single source of truth — synchronously derived, no LaunchedEffect gap, no manual reassignment
+                val isDeepLinkPending by remember {
+                    derivedStateOf { isDeepLinkDetected && isAppsFlyerProcessing }
+                }
 
                 LaunchedEffect(Unit) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -94,74 +119,71 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-
+                // Handle DeepLink Data from Manager
                 LaunchedEffect(Unit) {
                     DeepLinkManager.deepLinkData.collect { data ->
                         if (data == null) {
-                            // Deep link data nahi mili (ho sakta hai ye normal cold start ho, deep link se nahi)
-                            isDeepLinkPending = false
+                            // Koi data nahi mila — agar AppsFlyer bhi processing khatam kar chuka hai,
+                            // to isDeepLinkDetected false karo taaki derivedStateOf khud pending=false compute kare
+                            if (!isAppsFlyerProcessing) {
+                                isDeepLinkDetected = false
+                            }
                             return@collect
                         }
 
                         when (data.deepLinkType) {
-
                             "chat" -> {
-
-                                repository.getPromptQuestions().collectLatest { result ->
-                                    if (result is NetworkResult.Success) {
-                                        val familyList = result.data?.family_details ?: emptyList()
-
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("chatId", data.chatId)
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("familyMemberId", data.familyMemberId)
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("type", data.type)
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("chatHistory", data.chatHistory)
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("familyList", familyList)
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("isFromDeepLink", true)
-
-                                        Log.d("MainActivity@@@@@@", "onCreate: $familyList")
-
-                                        mainNavController.navigate(AppDestination.ChatDataScreen)
-                                        DeepLinkManager.clear()
-                                        isDeepLinkPending = false   // ✅ ab dusre navigation allow karo
-                                    } else if (result is NetworkResult.Error) {
-                                        // Family list fail hui to bhi navigate karo, empty list ke saath
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("chatId", data.chatId)
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("familyMemberId", data.familyMemberId)
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("type", data.type)
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("chatHistory", data.chatHistory)
-                                        mainNavController.currentBackStackEntry
-                                            ?.savedStateHandle?.set("familyList", emptyList<Any>())
-
-                                        mainNavController.navigate(AppDestination.ChatDataScreen)
-                                        DeepLinkManager.clear()
-                                        isDeepLinkPending = false
-                                    }
+                                // Fetch family list before navigating
+                                val result = withTimeoutOrNull(8000) {
+                                    repository.getPromptQuestions()
+                                        .filter { it is NetworkResult.Success || it is NetworkResult.Error }
+                                        .first()
                                 }
+
+                                val familyList = if (result is NetworkResult.Success) {
+                                    result.data?.family_details ?: emptyList()
+                                } else {
+                                    emptyList()
+                                }
+
+                                // Navigate to ChatDataScreen and pop Splash inclusively
+                                mainNavController.navigate(AppDestination.ChatDataScreen) {
+                                    popUpTo(AppDestination.Splash) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+
+                                // Pass data to ChatDataScreen via its savedStateHandle
+                                mainNavController.currentBackStackEntry?.savedStateHandle?.let { h ->
+                                    h.set("chatId", data.chatId)
+                                    h.set("familyMemberId", data.familyMemberId)
+                                    h.set("type", data.type)
+                                    h.set("chatHistory", data.chatHistory)
+                                    h.set("familyList", familyList)
+                                    h.set("isFromDeepLink", true)
+                                    h.set("memberName", data.memberName)
+                                }
+
+                                DeepLinkManager.clear()
+                                DeepLinkManager.stopProcessing()
+                                isDeepLinkDetected = false
                             }
 
                             "report" -> {
                                 DeepLinkManager.setReportDeepLink(data.reportId)
+
+                                // ✅ Splash-based branches ke saath consistent popUpTo target
                                 mainNavController.navigate(AppDestination.MainScreen) {
-                                    popUpTo(AppDestination.Splash) {
-                                        inclusive = true
-                                    }
+                                    popUpTo(AppDestination.Splash) { inclusive = true }
                                     launchSingleTop = true
                                 }
-                                isDeepLinkPending = false
+
+                                DeepLinkManager.stopProcessing()
+                                isDeepLinkDetected = false
                             }
 
                             else -> {
-                                isDeepLinkPending = false
+                                DeepLinkManager.stopProcessing()
+                                isDeepLinkDetected = false
                             }
                         }
                     }
@@ -172,11 +194,11 @@ class MainActivity : ComponentActivity() {
                         activeFcmNotification = event
                     }
                 }
+
                 Box(Modifier.fillMaxSize()) {
-                    // ✅ isDeepLinkPending pass kiya — AppNavGraph ko bhi update karna hoga
                     AppNavGraph(navController = mainNavController, isDeepLinkPending = isDeepLinkPending)
                     LoaderOverlay(isVisible = isLoading)
-                    // Session Expired Dialog
+
                     if (showSessionDialog) {
                         AlertErrorDialog(
                             message = "Your session has expired. Please log in again to continue.",
@@ -196,7 +218,6 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-                    // FCM Notification Dialog
                     activeFcmNotification?.let { event ->
                         FcmNotificationDialog(
                             title = event.title,

@@ -64,7 +64,7 @@ class ChatDataViewModel @Inject constructor(
 
     val historyChatList: StateFlow<MutableList<ChatHistoryItem>> = _historyChatList
 
-    private lateinit var context: Context
+    private var context: Context? = null
 
     private val _chatArgs = MutableStateFlow(ChatScreenArgs())
     val chatArgs: StateFlow<ChatScreenArgs> = _chatArgs
@@ -112,6 +112,25 @@ class ChatDataViewModel @Inject constructor(
             type = type,
             familyList = familyList
         )
+        
+        // If familyList is empty (e.g. from deep link when network fails in MainActivity), 
+        // try fetching it here as a fallback.
+        if (familyList.isEmpty()) {
+            fetchFamilyListFallback()
+        }
+    }
+
+    private fun fetchFamilyListFallback() {
+        viewModelScope.launch {
+            repository.getPromptQuestions().collectLatest { result ->
+                if (result is NetworkResult.Success) {
+                    val newList = result.data?.family_details ?: emptyList()
+                    if (newList.isNotEmpty()) {
+                        _chatArgs.update { it.copy(familyList = newList) }
+                    }
+                }
+            }
+        }
     }
 
 
@@ -265,7 +284,7 @@ class ChatDataViewModel @Inject constructor(
                  if (uri.scheme == "http" || uri.scheme == "https") {
                      // Server se download karo
                      DownloadFileHelper.downloadFileToUri(
-                         context,
+                         context ?: app,
                          uri.toString()
                      ) ?: uri
                  } else {
@@ -276,7 +295,7 @@ class ChatDataViewModel @Inject constructor(
              val realPdfs = s.pdfs.map { pdf ->
                  if (pdf.uri.scheme == "http" || pdf.uri.scheme == "https") {
                      val downloadedUri = DownloadFileHelper.downloadFileToUri(
-                         context,
+                         context ?: app,
                          pdf.uri.toString()
                      )
                      pdf.copy(uri = downloadedUri ?: pdf.uri)
@@ -396,7 +415,7 @@ class ChatDataViewModel @Inject constructor(
                                     }
                                 }
                             }
-                            Toast.makeText(app, result.data ?: "Feedback saved", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(app, "Feedback saved", Toast.LENGTH_SHORT).show()
                         }
                         is NetworkResult.Error -> {
                             Toast.makeText(app, result.message ?: "Failed to save feedback", Toast.LENGTH_SHORT).show()
@@ -501,7 +520,7 @@ class ChatDataViewModel @Inject constructor(
          images: List<Uri> = emptyList(),
          pdfs: List<PdfData> = emptyList()
     ) {
-        if (chatId == 0 && type == "normal") {
+        if (chatId == 0) {
             when {
                 images.isNotEmpty() -> {
                     _messages.update { list ->
@@ -570,12 +589,12 @@ class ChatDataViewModel @Inject constructor(
 
             if(images.size > 0){
 
-                profileImage = UriToRequestBody.uriToMultipart(context, images.first(), "file")
+                profileImage = UriToRequestBody.uriToMultipart(context ?: app, images.first(), "file")
 
             }else{
                 pdfs.firstOrNull()?.uri?.let { uri ->
                     profileImage = UriToRequestBody.uriToMultipart(
-                        context = context,
+                        context = context ?: app,
                         uri = uri,
                         partName = "file"
                     )
@@ -776,6 +795,3 @@ class ChatDataViewModel @Inject constructor(
         }
     }
 }
-
-
-

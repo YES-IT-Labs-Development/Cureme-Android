@@ -67,6 +67,7 @@ fun MenuDrawer(
     onChatHistoryClick: (id: Int, type: String) -> Unit,
     onNewChatClick: () -> Unit,
     isCaseChat: Boolean = false,
+    isLocked : Boolean = false
 ) {
 
     Log.d("ChatHistory", "chatHistory size = ${chatHistory.size}")
@@ -278,7 +279,7 @@ fun MenuDrawer(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(interactionSource = remember { MutableInteractionSource() },
+                            .clickable(enabled = !isLocked,interactionSource = remember { MutableInteractionSource() },
                                 indication = null) { showCategoryDropdown = !showCategoryDropdown }
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.Start,
@@ -297,10 +298,12 @@ fun MenuDrawer(
                         )
                         Spacer(modifier = Modifier.width(10.dp))
 
-                        Icon(
-                            painter = painterResource(if (showCategoryDropdown) R.drawable.ic_dropdown_show else R.drawable.ic_dropdown_icon),
-                            contentDescription = null
-                        )
+                        if (isLocked){
+                            Icon(
+                                painter = painterResource(if (showCategoryDropdown) R.drawable.ic_dropdown_show else R.drawable.ic_dropdown_icon),
+                                contentDescription = null
+                            )
+                        }
 
                     }
 
@@ -373,7 +376,7 @@ fun MenuDrawer(
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth().clickable(
-                                enabled = !isCaseChat,
+                                enabled = !isCaseChat && !isLocked,
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
                             ){
@@ -395,7 +398,7 @@ fun MenuDrawer(
                                 fontFamily = FontFamily(Font(R.font.urbanist_medium)),
                                 fontWeight = FontWeight.Medium
                             )
-                            if (!isCaseChat) {
+                            if (!isCaseChat && !isLocked) {
                                 Image(
                                     painter = painterResource(if (showUserDropdown1) R.drawable.ic_dropdown_show else R.drawable.ic_dropdown_icon), 
                                     contentDescription = null

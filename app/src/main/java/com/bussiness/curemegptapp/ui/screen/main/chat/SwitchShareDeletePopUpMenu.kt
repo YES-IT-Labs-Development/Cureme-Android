@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -32,6 +33,8 @@ import com.bussiness.curemegptapp.ui.component.RoundedCustomCheckbox
 fun SwitchShareDeletePopUpMenu(
     modifier: Modifier = Modifier,
     switchText : String = "Switch to Case",
+    isEnabled: Boolean = true,
+    onInvalidClick: () -> Unit = {},
     showSwitch: Boolean = true,
     onSwitchClick: () -> Unit,
     onShareClick: () -> Unit,
@@ -43,13 +46,20 @@ fun SwitchShareDeletePopUpMenu(
         modifier = modifier.wrapContentSize(Alignment.TopEnd)
     ) {
       IconButton(
-            onClick = {  expanded = true},
-            modifier = Modifier.size(45.dp)
+          onClick = {
+              if (isEnabled) {
+                  expanded = true
+              } else {
+                  onInvalidClick()
+              }
+          },
+          modifier = Modifier.size(45.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_menu_icon3),
-                contentDescription = "More options",
-            )
+          Image(
+              painter = painterResource(id = R.drawable.ic_menu_icon3),
+              contentDescription = "More options",
+              modifier = Modifier.alpha(if (isEnabled) 1f else 0.5f)
+          )
         }
 
         DropdownMenu(

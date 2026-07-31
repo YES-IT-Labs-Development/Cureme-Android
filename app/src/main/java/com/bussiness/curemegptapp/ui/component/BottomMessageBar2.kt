@@ -81,7 +81,9 @@ fun BottomMessageBar2(
     familyList: List<FamilyDetails> = emptyList<FamilyDetails>(),
     familyMemberId: Int,
     onSendClicked: () -> Unit = { },
-    isSelectionLocked: Boolean
+    isSelectionLocked: Boolean,
+    memberName: String = "",
+    onInvalidClick: () -> Unit = {},
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
@@ -97,6 +99,13 @@ fun BottomMessageBar2(
     val selectedMember = familyList.find { it.id == familyMemberId } ?: familyList.find {
         it.relationship.equals("myself", ignoreCase = true)
     }
+
+
+// Deep link case: memberName ko familyList ke against verify karo
+    val isMemberValidInList = familyList.any {
+        it.name.equals(memberName, ignoreCase = true)
+    }
+
 
     val fileLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -270,12 +279,18 @@ fun BottomMessageBar2(
                             modifier = Modifier
                                 .wrapContentWidth()
                                 .padding(horizontal = 10.dp)
-                                .padding(top = 30.dp)
+                                .padding(top = if (showUserDropdown && !isCaseChat) 30.dp else 8.dp)
                                 .clickable(
-                                    enabled = !isCaseChat && !isSelectionLocked,
+                                    enabled = !isCaseChat,
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
-                                ) { showUserDropdown = !showUserDropdown },
+                                ) {
+                                    if (isSelectionLocked && !isMemberValidInList) {
+                                        onInvalidClick()
+                                    } else if (!isSelectionLocked) {
+                                        showUserDropdown = !showUserDropdown
+                                    }
+                                },
                             shape = RoundedCornerShape(30.dp),
                             color = if (isCaseChat) Color(0xFFF1F5F9) else Color(0xFFF0EDFF),
                         ) {
@@ -312,15 +327,18 @@ fun BottomMessageBar2(
                                     )
                                 }
 
-                                val displayName = selectedMember?.let { member ->
-                                    val isMyself = member.relationship?.trim()?.equals("myself", ignoreCase = true) == true
-
-                                    if (isMyself && !isSelectionLocked) {
-                                        "${member.name} (Myself)"
-                                    } else {
-                                        member.name
-                                    }
-                                } ?: "Select User"
+                                val displayName = if (isSelectionLocked) {
+                                    memberName.ifBlank { "Unknown Member" }
+                                } else {
+                                    selectedMember?.let { member ->
+                                        val isMyself = member.relationship?.trim()?.equals("myself", ignoreCase = true) == true
+                                        if (isMyself) {
+                                            "${member.name} (Myself)"
+                                        } else {
+                                            member.name
+                                        }
+                                    } ?: "Select User"
+                                }
 
                                 Text(
                                     text = displayName,
@@ -340,6 +358,36 @@ fun BottomMessageBar2(
                                         modifier = Modifier.size(14.dp)
                                     )
                                 }
+                            }
+                        }
+                    }
+
+                    if (isSelectionLocked && !isMemberValidInList) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFFFF4ED)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_warning),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = "This family member no longer exists. Chat options are disabled.",
+                                    color = Color(0xFF374151),
+                                    fontSize = 13.sp,
+                                    fontFamily = FontFamily(Font(R.font.urbanist_regular)),
+                                    lineHeight = 16.sp
+                                )
                             }
                         }
                     }
@@ -514,12 +562,16 @@ fun BottomMessageBar2(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-                                    fileLauncher.launch(
-                                        arrayOf(
-                                            "image/*",
-                                            "application/pdf"
+                                    if (isSelectionLocked && !isMemberValidInList) {
+                                        onInvalidClick()
+                                    } else {
+                                        fileLauncher.launch(
+                                            arrayOf(
+                                                "image/*",
+                                                "application/pdf"
+                                            )
                                         )
-                                    )
+                                    }
                                 }
                         )
 
@@ -619,13 +671,25 @@ fun BottomMessageBar2(
                                 BasicTextField(
                                     value = state.message,
                                     onValueChange = {
-                                        viewModel.onMessageChange(it)
-                                        recognizedText = ""
+                                        if (isSelectionLocked && !isMemberValidInList) {
+                                            onInvalidClick()
+                                        } else {
+                                            viewModel.onMessageChange(it)
+                                            recognizedText = ""
+                                        }
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .focusRequester(focusRequester)
-                                        .padding(vertical = 12.dp),
+                                        .padding(vertical = 12.dp)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            if (isSelectionLocked && !isMemberValidInList) {
+                                                onInvalidClick()
+                                            }
+                                        },
                                     textStyle = TextStyle(
                                         fontFamily = FontFamily(Font(R.font.urbanist_regular)),
                                         fontSize = 13.sp,
@@ -640,7 +704,7 @@ fun BottomMessageBar2(
                                         ) {
                                             if (state.message.isEmpty()) {
                                                 Text(
-                                                    "Ask anything…",
+                                                    text = if (isSelectionLocked && !isMemberValidInList) "Member no longer exists" else "Ask anything…",
                                                     fontSize = 12.sp,
                                                     color = Color(0xFF949494),
                                                     fontFamily = FontFamily(Font(R.font.urbanist_regular))
@@ -659,21 +723,25 @@ fun BottomMessageBar2(
                     if (isMessageEmpty) {
                         IconButton(
                             onClick = {
-                                if (!isRecording) {
-                                    val permission = ContextCompat.checkSelfPermission(
-                                        context,
-                                        android.Manifest.permission.RECORD_AUDIO
-                                    )
-
-                                    if (permission == PackageManager.PERMISSION_GRANTED) {
-                                        recognizedText = ""
-                                        showText = false
-                                        speechRecognizer.startListening(intent)
-                                    } else {
-                                        permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
-                                    }
+                                if (isSelectionLocked && !isMemberValidInList) {
+                                    onInvalidClick()
                                 } else {
-                                    speechRecognizer.stopListening()
+                                    if (!isRecording) {
+                                        val permission = ContextCompat.checkSelfPermission(
+                                            context,
+                                            android.Manifest.permission.RECORD_AUDIO
+                                        )
+
+                                        if (permission == PackageManager.PERMISSION_GRANTED) {
+                                            recognizedText = ""
+                                            showText = false
+                                            speechRecognizer.startListening(intent)
+                                        } else {
+                                            permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                                        }
+                                    } else {
+                                        speechRecognizer.stopListening()
+                                    }
                                 }
                             },
                             modifier = Modifier
@@ -690,10 +758,13 @@ fun BottomMessageBar2(
                     } else {
                         IconButton(
                             onClick = {
-
-                                viewModel.sendMessageFromInput()
-                                keyboardController?.hide()
-                                onSendClicked()
+                                if (isSelectionLocked && !isMemberValidInList) {
+                                    onInvalidClick()
+                                } else {
+                                    viewModel.sendMessageFromInput()
+                                    keyboardController?.hide()
+                                    onSendClicked()
+                                }
                             },
                             modifier = Modifier
                                 .size(60.dp)

@@ -81,6 +81,9 @@ fun HomeScreen(
 
             if (data.deepLinkType == "report") {
 
+                navController.currentBackStackEntry
+                    ?.savedStateHandle?.set("isFromDeepLink", true)
+
                 navController.navigate(
                     AppDestination.ReportScreen(data.reportId.toString())
                 )

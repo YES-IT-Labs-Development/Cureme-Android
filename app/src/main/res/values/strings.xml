@@ -235,7 +235,7 @@
     <string name="clock_icon_description">clock</string>
     <string name="start_date_label">Start Date</string>
     <string name="end_date_optional_label">End Date (Optional)</string>
-    <string name="date_format_placeholder">MM-DD-YYYY</string>
+    <string name="date_format_placeholder">DD-MM-YYYY</string>
     <string name="upload_prescription_optional_label">Upload Prescription (Optional)</string>
 <string name="notes_label">Notes</string>
     <string name="notes_placeholder">Special instructions, side effects to watch for....</string>

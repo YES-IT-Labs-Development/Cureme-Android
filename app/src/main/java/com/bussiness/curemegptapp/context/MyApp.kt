@@ -32,6 +32,8 @@ class MyApp : Application(){
             this
         )
 
+//        DeepLinkManager.startProcessing()
+
         AppsFlyerLib.getInstance().subscribeForDeepLink { result ->
 
             Timber.d("AppsFlyer Result : $result")
@@ -49,12 +51,14 @@ class MyApp : Application(){
 
                             val encryptedChatId = deepLink.getStringValue("chatId")
                             val encryptedFamilyId = deepLink.getStringValue("familyMemberID")
+                            val encryptedMemberName = deepLink.getStringValue("memberName")
 
                             DeepLinkManager.setChatDeepLink(
-                                chatId = LinkEncryptionHelper.decrypt(encryptedChatId) ?: 0,
-                                familyMemberId = LinkEncryptionHelper.decrypt(encryptedFamilyId) ?: 0,
+                                chatId = encryptedChatId?.let { LinkEncryptionHelper.decrypt(it) } ?: 0,
+                                familyMemberId = encryptedFamilyId?.let { LinkEncryptionHelper.decrypt(it) } ?: 0,
                                 type = deepLink.getStringValue("type") ?: "normal",
-                                chatHistory = deepLink.getStringValue("chatHistory")?.toBoolean() ?: false
+                                chatHistory = deepLink.getStringValue("chatHistory")?.toBoolean() ?: false,
+                                memberName = encryptedMemberName?.let { LinkEncryptionHelper.decryptString(it) } ?: "",
                             )
                         }
 
@@ -63,18 +67,24 @@ class MyApp : Application(){
                             val encryptedReportId = deepLink.getStringValue("reportId")
 
                             DeepLinkManager.setReportDeepLink(
-                                reportId = LinkEncryptionHelper.decrypt(encryptedReportId) ?: 0
+                                reportId = encryptedReportId?.let { LinkEncryptionHelper.decrypt(it) } ?: 0
                             )
+                        }
+                        
+                        else -> {
+                            DeepLinkManager.stopProcessing()
                         }
                     }
                 }
 
                 DeepLinkResult.Status.NOT_FOUND -> {
                     Timber.d("Deep Link Not Found")
+                    DeepLinkManager.stopProcessing()
                 }
 
                 DeepLinkResult.Status.ERROR -> {
                     Timber.e("Deep Link Error : ${result.error}")
+                    DeepLinkManager.stopProcessing()
                 }
             }
 

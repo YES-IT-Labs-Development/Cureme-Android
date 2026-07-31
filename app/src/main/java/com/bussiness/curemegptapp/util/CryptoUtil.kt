@@ -1,79 +1,147 @@
 package com.bussiness.curemegptapp.util
 
 import android.util.Base64
-import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-import java.security.SecureRandom
-import javax.crypto.Cipher
-import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 object CryptoUtil {
 
-    private const val SECRET_KEY = "CureMe@2026#AppsFlyer"
+    private const val CIPHER_KEY: Byte = 0x5A
 
-    private const val TRANSFORMATION = "AES/GCM/NoPadding"
-    private const val IV_LENGTH = 12
-    private const val TAG_LENGTH = 128
 
-    private val secretKey: SecretKeySpec by lazy {
-        val digest = MessageDigest.getInstance("SHA-256")
-            .digest(SECRET_KEY.toByteArray(StandardCharsets.UTF_8))
-        SecretKeySpec(digest, "AES")
-    }
+    /**
+     * Encrypts an integer ID into a URL-safe encrypted string token.
+     */
+    fun encrypt(id: Int): String {
 
-    fun encrypt(plainText: String): String {
+        val data = id.toString()
+            .toByteArray(Charsets.UTF_8)
 
-        val iv = ByteArray(IV_LENGTH)
-        SecureRandom().nextBytes(iv)
+        val encrypted = data.map {
+            (it xor CIPHER_KEY).toByte()
+        }.toByteArray()
 
-        val cipher = Cipher.getInstance(TRANSFORMATION)
-        cipher.init(
-            Cipher.ENCRYPT_MODE,
-            secretKey,
-            GCMParameterSpec(TAG_LENGTH, iv)
-        )
-
-        val encrypted = cipher.doFinal(
-            plainText.toByteArray(StandardCharsets.UTF_8)
-        )
-
-        val byteBuffer = ByteBuffer.allocate(iv.size + encrypted.size)
-        byteBuffer.put(iv)
-        byteBuffer.put(encrypted)
 
         return Base64.encodeToString(
-            byteBuffer.array(),
-            Base64.URL_SAFE or Base64.NO_WRAP
+            encrypted,
+            Base64.URL_SAFE or
+                    Base64.NO_WRAP or
+                    Base64.NO_PADDING
         )
     }
 
-    fun decrypt(cipherText: String): String {
 
-        val decoded = Base64.decode(
-            cipherText,
-            Base64.URL_SAFE or Base64.NO_WRAP
+    /**
+     * Decrypts encrypted token back into Integer.
+     * Supports old plain integer values also.
+     */
+    fun decrypt(value: String): Int? {
+
+        val trimmed = value.trim()
+
+        if (trimmed.isEmpty())
+            return null
+
+
+        return try {
+
+            val decoded = Base64.decode(
+                trimmed,
+                Base64.URL_SAFE or
+                        Base64.NO_WRAP or
+                        Base64.NO_PADDING
+            )
+
+
+            val decrypted = decoded.map {
+                (it xor CIPHER_KEY).toByte()
+            }.toByteArray()
+
+
+            String(
+                decrypted,
+                Charsets.UTF_8
+            ).toIntOrNull()
+                ?: trimmed.toIntOrNull()
+
+
+        } catch (e: Exception) {
+
+            trimmed.toIntOrNull()
+
+        }
+    }
+
+
+
+    /**
+     * Encrypts String into URL-safe token.
+     */
+    fun encryptString(value: String): String {
+
+        val encrypted = value
+            .toByteArray(Charsets.UTF_8)
+            .map {
+                (it xor CIPHER_KEY).toByte()
+            }
+            .toByteArray()
+
+
+        return Base64.encodeToString(
+            encrypted,
+            Base64.URL_SAFE or
+                    Base64.NO_WRAP or
+                    Base64.NO_PADDING
         )
+    }
 
-        val byteBuffer = ByteBuffer.wrap(decoded)
 
-        val iv = ByteArray(IV_LENGTH)
-        byteBuffer.get(iv)
 
-        val encrypted = ByteArray(byteBuffer.remaining())
-        byteBuffer.get(encrypted)
+    /**
+     * Decrypts encrypted token back into String.
+     */
+    fun decryptString(value: String): String? {
 
-        val cipher = Cipher.getInstance(TRANSFORMATION)
-        cipher.init(
-            Cipher.DECRYPT_MODE,
-            secretKey,
-            GCMParameterSpec(TAG_LENGTH, iv)
-        )
+        val trimmed = value.trim()
 
-        return String(
-            cipher.doFinal(encrypted),
-            StandardCharsets.UTF_8
-        )
+        if (trimmed.isEmpty())
+            return null
+
+
+        return try {
+
+            val decoded = Base64.decode(
+                trimmed,
+                Base64.URL_SAFE or
+                        Base64.NO_WRAP or
+                        Base64.NO_PADDING
+            )
+
+
+            val decrypted = decoded.map {
+                (it xor CIPHER_KEY).toByte()
+            }.toByteArray()
+
+
+            String(
+                decrypted,
+                Charsets.UTF_8
+            )
+
+
+        } catch (e: Exception) {
+
+            java.net.URLDecoder.decode(
+                trimmed,
+                "UTF-8"
+            )
+        }
+    }
+
+
+
+    /**
+     * XOR helper
+     */
+    private infix fun Byte.xor(other: Byte): Int {
+        return this.toInt() xor other.toInt()
     }
 }

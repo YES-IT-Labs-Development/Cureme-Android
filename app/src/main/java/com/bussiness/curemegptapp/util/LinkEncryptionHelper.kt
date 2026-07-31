@@ -1,60 +1,77 @@
 package com.bussiness.curemegptapp.util
 
+import android.net.Uri
 import android.util.Base64
 
 object LinkEncryptionHelper {
+    private const val CIPHER_KEY: Int = 0x5A
 
-    private const val CIPHER_KEY: Byte = 0x5A
-
-    /**
-     * Encrypt integer ID into URL-safe token
-     */
+    /** Encrypts an integer ID into a URL-safe encrypted string token */
     fun encrypt(id: Int): String {
-
-        val bytes = id.toString().toByteArray(Charsets.UTF_8)
-
-        val encrypted = ByteArray(bytes.size)
-
-        bytes.forEachIndexed { index, byte ->
-            encrypted[index] = (byte.toInt() xor CIPHER_KEY.toInt()).toByte()
-        }
-
-        return Base64.encodeToString(
-            encrypted,
-            Base64.NO_WRAP or Base64.URL_SAFE
-        ).trimEnd('=')
+        val stringVal = id.toString()
+        val bytes = stringVal.toByteArray(Charsets.UTF_8)
+        val encryptedBytes = bytes.map { (it.toInt() xor CIPHER_KEY).toByte() }.toByteArray()
+        return Base64.encodeToString(encryptedBytes, Base64.NO_WRAP)
+            .replace("+", "-")
+            .replace("/", "_")
+            .replace("=", "")
     }
 
-    /**
-     * Decrypt token back to integer
-     * Supports encrypted as well as legacy plain integer values.
-     */
-    fun decrypt(value: String?): Int? {
+    /** Decrypts a URL-safe encrypted token back into an integer ID */
+    fun decrypt(string: String): Int? {
+        val trimmed = string.trim()
+        if (trimmed.isEmpty()) return null
 
-        if (value.isNullOrBlank()) return null
+        var base64 = trimmed
+            .replace("-", "+")
+            .replace("_", "/")
 
-        val trimmed = value.trim()
+        val remainder = base64.length % 4
+        if (remainder > 0) {
+            base64 += "=".repeat(4 - remainder)
+        }
 
         return try {
-
-            val decoded = Base64.decode(
-                trimmed,
-                Base64.URL_SAFE or Base64.NO_WRAP
-            )
-
-            val decrypted = ByteArray(decoded.size)
-
-            decoded.forEachIndexed { index, byte ->
-                decrypted[index] = (byte.toInt() xor CIPHER_KEY.toInt()).toByte()
-            }
-
-            String(decrypted, Charsets.UTF_8).toIntOrNull()
-
+            val data = Base64.decode(base64, Base64.NO_WRAP)
+            val decryptedBytes = data.map { (it.toInt() xor CIPHER_KEY).toByte() }.toByteArray()
+            val decryptedString = String(decryptedBytes, Charsets.UTF_8)
+            decryptedString.toIntOrNull() ?: trimmed.toIntOrNull()
         } catch (e: Exception) {
-
-            // Legacy support (plain integer)
             trimmed.toIntOrNull()
+        }
+    }
 
+    /** Encrypts a string into a URL-safe encrypted string token */
+    fun encryptString(input: String): String {
+        val bytes = input.toByteArray(Charsets.UTF_8)
+        val encryptedBytes = bytes.map { (it.toInt() xor CIPHER_KEY).toByte() }.toByteArray()
+        return Base64.encodeToString(encryptedBytes, Base64.NO_WRAP)
+            .replace("+", "-")
+            .replace("/", "_")
+            .replace("=", "")
+    }
+
+    /** Decrypts a URL-safe encrypted token back into a string */
+    fun decryptString(string: String): String? {
+        val trimmed = string.trim()
+        if (trimmed.isEmpty()) return null
+
+        var base64 = trimmed
+            .replace("-", "+")
+            .replace("_", "/")
+
+        val remainder = base64.length % 4
+        if (remainder > 0) {
+            base64 += "=".repeat(4 - remainder)
+        }
+
+        return try {
+            val data = Base64.decode(base64, Base64.NO_WRAP)
+            val decryptedBytes = data.map { (it.toInt() xor CIPHER_KEY).toByte() }.toByteArray()
+            val decryptedString = String(decryptedBytes, Charsets.UTF_8)
+            decryptedString.ifEmpty { null }
+        } catch (e: Exception) {
+            Uri.decode(string)
         }
     }
 }

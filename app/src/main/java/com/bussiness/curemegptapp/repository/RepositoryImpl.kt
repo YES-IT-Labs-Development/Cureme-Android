@@ -59,6 +59,8 @@ import retrofit2.http.Part
 import javax.inject.Inject
 import kotlin.Int
 import kotlin.collections.get
+import kotlin.coroutines.cancellation.CancellationException
+
 //here all api implementation
 
 class RepositoryImpl @Inject constructor(
@@ -2035,51 +2037,72 @@ class RepositoryImpl @Inject constructor(
     }
 
     override suspend fun getPromptQuestions(): Flow<NetworkResult<PromptQuestionResponse>> = flow {
-        try {
-            Log.d("ChatAPI", "getPromptQuestions Request")
-            val response = api.getPromptQuestions()
-            Log.d("ChatAPI", "getPromptQuestions Response [code=${response.code()}] -> isSuccessful: ${response.isSuccessful}, body: ${response.body() ?: response.errorBody()?.string()}")
-            if (response.isSuccessful) {
-                val respBody = response.body()
-                if (respBody != null) {
-                    AppConstant.IMAGE_BASE_URL +
-                    if (respBody.has("success") && respBody.get("success").asBoolean) {
-                        val dataObj = respBody.getAsJsonObject("data")
-                        if (dataObj != null ) {
-                            val promptQuestion = Gson().fromJson(dataObj, PromptQuestionResponse::class.java)
-                            val userDetails = dataObj.get("userDetails").asJsonObject
-                            val photo = (userDetails.getStringSafe("profile_image").takeIf { it.isNotEmpty() }
-                                ?: userDetails.getStringSafe("profile_photo")).takeIf { it.isNotEmpty() }
-                            val family = FamilyDetails(
-                                id = userDetails.get("id").asInt,
-                                name = userDetails.get("name").asString,
-                                relationship = "Myself",
-                                profile_photo = photo
-                            )
-                            val updatedFamilyList = listOf(family) + promptQuestion.family_details
-                            val updatedResponse = promptQuestion.copy(
-                                family_details = updatedFamilyList
-                            )
-                            emit(NetworkResult.Success(updatedResponse))
-                        }
-                        else {
-                              emit(NetworkResult.Error("Message not found in data"))
-                        }
 
-                        //  emit(NetworkResult.Success(respBody.get("message").asString))
-                    } else {
-                        emit(NetworkResult.Error(respBody.get("message").asString))
-                    }
-                } else {
-                    emit(NetworkResult.Error(AppConstant.serverError))
-                }
-            } else {
-                emit(NetworkResult.Error(AppConstant.serverError))
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        Log.d("ChatAPI", "getPromptQuestions Request")
+
+        val response = api.getPromptQuestions()
+
+        Log.d(
+            "ChatAPI",
+            "getPromptQuestions Response [code=${response.code()}] -> isSuccessful: ${response.isSuccessful}"
+        )
+
+        if (!response.isSuccessful) {
             emit(NetworkResult.Error(AppConstant.serverError))
+            return@flow
         }
+
+        val respBody = response.body()
+
+        if (respBody == null) {
+            emit(NetworkResult.Error(AppConstant.serverError))
+            return@flow
+        }
+
+        if (!respBody.has("success") || !respBody.get("success").asBoolean) {
+            emit(NetworkResult.Error(respBody.get("message").asString))
+            return@flow
+        }
+
+        val dataObj = respBody.getAsJsonObject("data")
+
+        if (dataObj == null) {
+            emit(NetworkResult.Error("Data not found"))
+            return@flow
+        }
+
+        val promptQuestion =
+            Gson().fromJson(dataObj, PromptQuestionResponse::class.java)
+
+        val userDetails = dataObj.getAsJsonObject("userDetails")
+
+        val photo =
+            (userDetails.getStringSafe("profile_image").takeIf { it.isNotEmpty() }
+                ?: userDetails.getStringSafe("profile_photo"))
+                .takeIf { it.isNotEmpty() }
+
+        val family = FamilyDetails(
+            id = userDetails.get("id").asInt,
+            name = userDetails.get("name").asString,
+            relationship = "Myself",
+            profile_photo = photo
+        )
+
+        emit(
+            NetworkResult.Success(
+                promptQuestion.copy(
+                    family_details = listOf(family) + promptQuestion.family_details
+                )
+            )
+        )
+
+    }.catch { e ->
+
+        if (e is CancellationException) throw e
+
+        e.printStackTrace()
+
+        emit(NetworkResult.Error(AppConstant.serverError))
     }
 
     override suspend fun getUserChatHistoryList(): Flow<NetworkResult<MutableList<ChatHistoryItem>>> = flow {

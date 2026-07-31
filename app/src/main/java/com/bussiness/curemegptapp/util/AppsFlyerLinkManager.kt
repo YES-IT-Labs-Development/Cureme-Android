@@ -7,11 +7,11 @@ object AppsFlyerLinkManager {
     fun generateChatLink(
         familyMemberID: String,
         chatId: String,
+        memberName: String,
         type: String,
-        chatHistory: Boolean = false
+        chatHistory: Boolean = false,
     ): String {
 
-        // Encrypt only if value is numeric and > 0
         val encryptedChatId = chatId.toIntOrNull()
             ?.let { LinkEncryptionHelper.encrypt(it) }
             ?: chatId
@@ -19,6 +19,8 @@ object AppsFlyerLinkManager {
         val encryptedFamilyId = familyMemberID.toIntOrNull()
             ?.let { LinkEncryptionHelper.encrypt(it) }
             ?: familyMemberID
+
+        val encryptedMemberName = LinkEncryptionHelper.encryptString(memberName)
 
         return LinkGenerator("share").apply {
 
@@ -35,6 +37,7 @@ object AppsFlyerLinkManager {
 
             addParameter("chatId", encryptedChatId)
             addParameter("familyMemberID", encryptedFamilyId)
+            addParameter("memberName", encryptedMemberName)
             addParameter("type", type)
             addParameter("chatHistory", chatHistory.toString())
 

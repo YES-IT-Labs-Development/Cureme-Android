@@ -1,5 +1,6 @@
 package com.bussiness.curemegptapp.ui.screen.intro
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -24,20 +25,38 @@ fun SplashScreen(navController: NavHostController, isDeepLinkPending: Boolean = 
     val context = LocalContext.current
     val sessionManager = SessionManager.getInstance(context)
 
-    LaunchedEffect(Unit) {
-        delay(2000)
+   /* LaunchedEffect(isDeepLinkPending) {
+        if (isDeepLinkPending) return@LaunchedEffect
 
-        // ✅ Deep link process hone tak wait karo — jab tak isDeepLinkPending false na ho
-        var waited = 0
-        while (isDeepLinkPending && waited < 5000) {
-            delay(100)
-            waited += 100
+        delay(2000)
+        
+        // ✅ Double check: Ensure Splash is still the current destination before navigating to Home/Onboarding.
+        // This prevents overriding a deep link navigation that might have already started.
+        val currentDestination = navController.currentDestination?.route
+        val splashRoute = AppDestination.Splash::class.qualifiedName
+        
+        if (currentDestination == null || splashRoute == null || currentDestination.contains("Splash")) {
+            navigateToNext(navController, sessionManager)
+        }
+    }*/
+    LaunchedEffect(isDeepLinkPending) {
+        Log.d("Splash", "DeepLink Pending = $isDeepLinkPending")
+
+        if (isDeepLinkPending) {
+            Log.d("Splash", "Returning because deep link pending")
+            return@LaunchedEffect
         }
 
-        // ✅ Agar deep link abhi bhi pending hai (5 sec timeout ke baad bhi), to skip karo
-        // MainActivity ka LaunchedEffect khud ChatDataScreen pe navigate kar dega
-        if (!isDeepLinkPending) {
+        delay(2000)
+
+        val current = navController.currentDestination?.route
+        Log.d("Splash", "Current Route = $current")
+
+
+        if (current == null || current.contains("Splash")) {
             navigateToNext(navController, sessionManager)
+        } else {
+            Log.d("Splash", "Skipping default navigation — already navigated to $current")
         }
     }
 

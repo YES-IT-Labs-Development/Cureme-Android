@@ -44,10 +44,12 @@ import androidx.constraintlayout.compose.Dimension  // Dimension class ke liye
 import com.bussiness.curemegptapp.apimodel.chatModel.FamilyDetails
 import com.bussiness.curemegptapp.data.model.ChatMessage
 import com.bussiness.curemegptapp.ui.component.input.RightSideDrawer
+import com.bussiness.curemegptapp.ui.dialog.AlertErrorDialog
 import com.bussiness.curemegptapp.ui.dialog.DeleteChatDialog
 import com.bussiness.curemegptapp.ui.dialog.ShareChatDialog
 import com.bussiness.curemegptapp.ui.dialog.SwitchToDialog
 import com.bussiness.curemegptapp.util.AppsFlyerLinkManager
+import com.bussiness.curemegptapp.util.SessionManager
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
@@ -56,21 +58,26 @@ fun ChatDataScreen(
     viewModel: ChatDataViewModel = hiltViewModel(),
 ) {
 
-    val handle = navController.previousBackStackEntry?.savedStateHandle
-    val chatId = handle?.get<Int>("chatId") ?: 0
-    val familyMemberId = handle?.get<Int>("familyMemberId") ?: 0
-    val chatMessage = handle?.get<ChatMessage>("textMessage")
-    var type = handle?.get<String>("type") ?: "normal"
-    val familyList = handle?.get<List<FamilyDetails>>("familyList") ?: emptyList()
-    val chatHistory = handle?.get("chatHistory") ?: false
-    val currentHandle = navController.currentBackStackEntry?.savedStateHandle
-    val isInitialized = currentHandle?.get<Boolean>("isInitialized") ?: false
+    val currHandle = navController.currentBackStackEntry?.savedStateHandle
+    val prevHandle = navController.previousBackStackEntry?.savedStateHandle
+
+    // Dono handles check karo deep link support ke liye
+    val chatId = currHandle?.get<Int>("chatId") ?: prevHandle?.get<Int>("chatId") ?: 0
+    val familyMemberId = currHandle?.get<Int>("familyMemberId") ?: prevHandle?.get<Int>("familyMemberId") ?: 0
+    val memberName = currHandle?.get<String>("memberName") ?: prevHandle?.get<String>("memberName") ?: ""
+    val chatMessage = currHandle?.get<ChatMessage>("textMessage") ?: prevHandle?.get<ChatMessage>("textMessage")
+    var type = currHandle?.get<String>("type") ?: prevHandle?.get<String>("type") ?: "normal"
+    val familyList = currHandle?.get<List<FamilyDetails>>("familyList") ?: prevHandle?.get<List<FamilyDetails>>("familyList") ?: emptyList()
+    val chatHistory = currHandle?.get<Boolean>("chatHistory") ?: prevHandle?.get<Boolean>("chatHistory") ?: false
+    val isFromDeepLink = currHandle?.get<Boolean>("isFromDeepLink") ?: prevHandle?.get<Boolean>("isFromDeepLink") ?: false
+
+//    val isInitialized = currHandle?.get<Boolean>("isInitialized") ?: false
     val context = LocalContext.current
+    val sessionManager : SessionManager = SessionManager.getInstance(context)
     var showRenameSheet by remember { mutableStateOf(false) }
     var chatToRename by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     val chatHistoryList by viewModel.historyChatList.collectAsState()
-    val isFromDeepLink = handle?.get<Boolean>("isFromDeepLink") ?: false
 
     Log.d("ChatScreen", "familyMemberId: $familyMemberId")
     Log.d("ChatScreen", "chatHistory: $chatHistory")
@@ -82,33 +89,9 @@ fun ChatDataScreen(
                 context = context, chatId = chatId, familyMemberId = familyMemberId,
                 chatMessage = chatMessage, type = type, familyList = familyList
             )
-            Timber.tag("ShareLink").d("chatId = $chatId")
-            Log.d("ShareLink", "familyMemberId = $familyMemberId")
-            if (!chatHistory) {
-                viewModel.onChatScreenOpened(
-                    chatId = chatId,
-                    type = type,
-                    message = chatMessage?.text,
-                    familyMemberId = familyMemberId,
-                    images = chatMessage?.images ?: emptyList(),
-                    pdfs = chatMessage?.pdfs ?: emptyList()
-                )
-            } else {
-                viewModel.getChatHistoryData(chatId, type)
-            }
-            currentHandle?.set("isInitialized", true)
-        }
-    }*/
-
-    LaunchedEffect(Unit) {
-        if (!isInitialized) {
-            viewModel.setChatArgs(
-                context = context, chatId = chatId, familyMemberId = familyMemberId,
-                chatMessage = chatMessage, type = type, familyList = familyList
-            )
 
 
-            if (chatId != 0) {
+            if (chatId != 0 || chatHistory) {
 
                 viewModel.getChatHistoryData(chatId, type)
             } else {
@@ -122,7 +105,50 @@ fun ChatDataScreen(
                     pdfs = chatMessage?.pdfs ?: emptyList()
                 )
             }
-            currentHandle?.set("isInitialized", true)
+//            currHandle?.set("isInitialized", true)
+        }
+    }*/
+    LaunchedEffect(
+        chatId,
+        familyMemberId,
+        chatHistory,
+        type
+    ) {
+
+        Log.d(
+            "ChatScreen",
+            "Loading chat chatId=$chatId family=$familyMemberId type=$type history=$chatHistory"
+        )
+
+
+        viewModel.setChatArgs(
+            context = context,
+            chatId = chatId,
+            familyMemberId = familyMemberId,
+            chatMessage = chatMessage,
+            type = type,
+            familyList = familyList
+        )
+
+
+        if (chatId != 0 || chatHistory) {
+
+            viewModel.getChatHistoryData(
+                chatId,
+                type
+            )
+
+        } else {
+
+            viewModel.onChatScreenOpened(
+                chatId = chatId,
+                type = type,
+                message = chatMessage?.text,
+                familyMemberId = familyMemberId,
+                images = chatMessage?.images ?: emptyList(),
+                pdfs = chatMessage?.pdfs ?: emptyList()
+            )
+
         }
     }
 
@@ -139,6 +165,7 @@ fun ChatDataScreen(
     var showDrawer by remember { mutableStateOf(false) }
     var selectedUser by remember { mutableStateOf("James (Myself)") }
     var showCaseDialog by remember { mutableStateOf(false) }
+    var showInvalidMemberDialog by remember { mutableStateOf(false) }
     val shareChatMessage = stringResource(R.string.share_chat_message)
 
     if (showRenameSheet && chatToRename != null) {
@@ -168,6 +195,9 @@ fun ChatDataScreen(
             }
         }
     }
+
+    val isMemberInvalid = isFromDeepLink &&
+            (memberName.isBlank() || familyList.none { it.name.equals(memberName, ignoreCase = true) })
 
     RightSideDrawer(
         drawerState = showDrawer,
@@ -228,7 +258,8 @@ fun ChatDataScreen(
                     viewModel.switchNewChat(context, "normal")
                     showDrawer = false
                 },
-                isCaseChat = chatArgs.type == "case"
+                isCaseChat = chatArgs.type == "case",
+                isLocked = isFromDeepLink
             )
 
 
@@ -283,13 +314,20 @@ fun ChatDataScreen(
                     menuIcon = R.drawable.ic_menu_icon3,
                     onLeftIconClick = { navController.popBackStack() },
                     onFilterClick = {
-                        showDrawer = true
+                        if (!isMemberInvalid) {
+                            showDrawer = true
+                        } else {
+                            showInvalidMemberDialog = true
+                        }
                     },
                     menuContent = {
+
                         SwitchShareDeletePopUpMenu(
                             switchText = if (chatArgs.type == "case") stringResource(R.string.switch_to_normal_text) else stringResource(
                                 R.string.switch_to_case_text
                             ),
+                            isEnabled = !isMemberInvalid,
+                            onInvalidClick = { showInvalidMemberDialog = true },
                             showSwitch = true,
                             onSwitchClick = {
                                 showSwitchDialog = true
@@ -339,8 +377,10 @@ fun ChatDataScreen(
                         state = uiState,
                         viewModel = viewModel,
                         familyList = chatArgs.familyList,
+                        memberName = memberName,
                         familyMemberId = chatArgs.familyMemberId,
-                        isSelectionLocked = isFromDeepLink
+                        isSelectionLocked = isFromDeepLink,
+                        onInvalidClick = { showInvalidMemberDialog = true }
                     )
 
                 }
@@ -433,13 +473,22 @@ fun ChatDataScreen(
         val link = AppsFlyerLinkManager.generateChatLink(
             chatArgs.familyMemberId.toString(),
             chatArgs.chatId.toString(),
+            selectedMember?.name ?: "",
             chatArgs.type,
             chatHistory
         )
-        Toast.makeText(context, chatArgs.chatId.toString(), Toast.LENGTH_LONG).show()
+
         ShareChatDialog(
             onDismiss = { showShareDialog = false },
             shareLink = link
+        )
+    }
+
+    if (showInvalidMemberDialog) {
+        AlertErrorDialog(
+            message = "This family member no longer exists. Chat options are disabled.",
+            onDismiss = { showInvalidMemberDialog = false },
+            onConfirm = { showInvalidMemberDialog = false }
         )
     }
 
@@ -452,5 +501,3 @@ fun ChatDataScreenPreview() {
     val navController = rememberNavController()
     // ChatDataScreen(navController = navController)
 }
-
-

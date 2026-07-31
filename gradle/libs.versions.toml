@@ -27,6 +27,7 @@ firebaseAnalyticsVersion = "22.0.0"
 runtimeVersion = "1.10.5"
 runtime = "1.10.6"
 animationCoreVersion = "1.11.4"
+playIntegrity = "1.4.0"
 
 [libraries]
 accompanist-permissions-v0360 = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissionsVersion" }
@@ -63,6 +64,7 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-compose-animation-core = { group = "androidx.compose.animation", name = "animation-core", version.ref = "animationCoreVersion" }
+play-integrity = { module = "com.google.android.play:integrity", version.ref = "playIntegrity" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -72,4 +74,3 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" }
-

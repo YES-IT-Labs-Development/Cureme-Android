@@ -27,6 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import androidx.compose.ui.graphics.Color
@@ -48,6 +50,7 @@ import com.bussiness.curemegptapp.R
 import com.bussiness.curemegptapp.ui.component.DocumentItem2
 import com.bussiness.curemegptapp.ui.component.PriorityImageTag
 import com.bussiness.curemegptapp.ui.component.TopBarHeader2
+import com.bussiness.curemegptapp.ui.dialog.ShareChatDialog
 import com.bussiness.curemegptapp.util.AppsFlyerLinkManager
 import com.bussiness.curemegptapp.util.DateUtils
 import com.bussiness.curemegptapp.viewmodel.reportviewmodel.ReportViewModel
@@ -65,6 +68,11 @@ fun ReportScreen(
     val state by viewModel.uiStateDetails.collectAsState()
     val familyMembersList by viewModel.familyMembers.collectAsState()
     val userProfileImage by viewModel.userProfileImage.collectAsState()
+    var showShareDialog by remember { mutableStateOf(false) }
+
+    val isFromDeepLink = navController.previousBackStackEntry
+        ?.savedStateHandle?.get<Boolean>("isFromDeepLink") ?: false
+
     LaunchedEffect(Unit) {
         viewModel.getReportDetailsRequest(id?:"")
     }
@@ -275,30 +283,21 @@ fun ReportScreen(
 
                     val context = LocalContext.current
 
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_share_icon),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(45.dp)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-
-                                val link = AppsFlyerLinkManager.generateReportLink(
-                                    reportId = id.toString(),
-                                )
-
-                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_TEXT, link)
+                    if (!isFromDeepLink){
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_share_icon),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(45.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    showShareDialog = true
                                 }
+                        )
+                    }
 
-                                context.startActivity(
-                                    Intent.createChooser(shareIntent, "Share Report")
-                                )
-                            }
-                    )
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Image(
@@ -467,6 +466,16 @@ fun ReportScreen(
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+    if (showShareDialog) {
+        val link = AppsFlyerLinkManager.generateReportLink(
+            reportId = id.toString(),
+        )
+
+        ShareChatDialog(
+            onDismiss = { showShareDialog = false },
+            shareLink = link
+        )
     }
 }
 

@@ -51,7 +51,7 @@ fun AppNavGraph(
         ) {
 
             composable<AppDestination.Splash> {
-                SplashScreen(navController)   //  pass kiya
+                SplashScreen(navController, isDeepLinkPending)
             }
             composable<AppDestination.Onboarding> { OnboardingScreen(navController) }
             composable<AppDestination.Login> { LoginScreen(navController) }

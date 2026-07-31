@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,6 +56,7 @@ import androidx.navigation.compose.rememberNavController
 import com.bussiness.curemegptapp.R
 import com.bussiness.curemegptapp.navigation.AppDestination
 import com.bussiness.curemegptapp.ui.component.CommonHeader
+import com.bussiness.curemegptapp.ui.dialog.ShareChatDialog
 import com.bussiness.curemegptapp.ui.sheet.BottomSheetDialog
 import com.bussiness.curemegptapp.ui.sheet.BottomSheetDialogProperties
 import com.bussiness.curemegptapp.ui.sheet.FilterHealthReportsBottomSheet
@@ -76,6 +78,8 @@ fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewMo
     val shareChatMessage = stringResource(R.string.share_chat_message)
     var selectedFilter by remember { mutableStateOf("All") }
     var selectedMember by remember { mutableStateOf<String?>(null) }
+    var shareLink by remember { mutableStateOf("") }
+    var showShareDialog by remember { mutableStateOf(false) }
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val members by viewModel.memberOptions.collectAsStateWithLifecycle()
@@ -230,14 +234,12 @@ fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewMo
                                 )
                             },
                             onShareClick = {
-                                viewModel.shareReportPdf(
-                                    context = context,
-                                    id = item.chat_id ?: 0,
-                                    error = { msg ->
-                                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                    }
+
+                                shareLink = AppsFlyerLinkManager.generateReportLink(
+                                    reportId = item.chat_id.toString()
                                 )
 
+                                showShareDialog = true
                             }
                         )
                     }
@@ -260,6 +262,15 @@ fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewMo
                 }
             }
         }
+    }
+    if (showShareDialog && shareLink.isNotEmpty()) {
+
+        ShareChatDialog(
+            onDismiss = {
+                showShareDialog = false
+            },
+            shareLink = shareLink
+        )
     }
 
 
@@ -306,6 +317,7 @@ fun HealthReportsScreen(navController: NavHostController,viewModel: ReportViewMo
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HealthReportsScreenPreview() {

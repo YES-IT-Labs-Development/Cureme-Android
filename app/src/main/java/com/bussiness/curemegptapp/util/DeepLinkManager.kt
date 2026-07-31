@@ -10,6 +10,7 @@ data class DeepLinkData(
     val familyMemberId: Int = 0,
     val type: String = "normal",
     val chatHistory: Boolean = false,
+    val memberName: String = "",
     val reportId: Int = 0
 )
 
@@ -18,19 +19,33 @@ object DeepLinkManager {
     private val _deepLinkData = MutableStateFlow<DeepLinkData?>(null)
     val deepLinkData: StateFlow<DeepLinkData?> = _deepLinkData.asStateFlow()
 
+    private val _isProcessing = MutableStateFlow(false)
+    val isProcessing: StateFlow<Boolean> = _isProcessing.asStateFlow()
+
+    fun startProcessing() {
+        _isProcessing.value = true
+    }
+
+    fun stopProcessing() {
+        _isProcessing.value = false
+    }
+
     fun setChatDeepLink(
         chatId: Int,
         familyMemberId: Int,
         type: String,
-        chatHistory: Boolean
+        chatHistory: Boolean,
+        memberName: String = "",
     ) {
         _deepLinkData.value = DeepLinkData(
             deepLinkType = "chat",
             chatId = chatId,
             familyMemberId = familyMemberId,
             type = type,
-            chatHistory = chatHistory
+            chatHistory = chatHistory,
+            memberName = memberName,
         )
+        stopProcessing()
     }
 
     fun setReportDeepLink(
@@ -40,6 +55,7 @@ object DeepLinkManager {
             deepLinkType = "report",
             reportId = reportId
         )
+        stopProcessing()
     }
 
     fun clear() {
