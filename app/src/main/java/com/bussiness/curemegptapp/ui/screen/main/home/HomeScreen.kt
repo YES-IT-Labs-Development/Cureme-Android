@@ -189,6 +189,7 @@ fun HomeScreen(
             notificationRes = R.drawable.ic_notification_home_icon,
             profileRes = R.drawable.user_not_found,
             profileImageUrl = profileImageUrl,
+
             onClick = {
                 navController.navigate(AppDestination.MyProfileScreen)
             },
@@ -210,27 +211,29 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            DailyMoodCheckCard(
-                selectedMood = selectedMood,
-                moodTitle = summary.title ?: "",
-                moodDescription = summary.summary ?: "",
-                isLoading = summary.isLoading,
-                onMoodSelected = { mood ->
-                    viewModel.updateMood(mood)
-                    Toast.makeText(
-                        context,
-                        "Thanks for giving your daily mood check 😊",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    SessionManager(context).saveMoodDate(context)
-                },
-                onClose = {
-                    showMoodCard = false
-                },
-                onSkip = {
-                    showMoodCard = false
-                }
-            )
+            if (showMoodCard){
+                DailyMoodCheckCard(
+                    selectedMood = selectedMood,
+                    moodTitle = summary.title ?: "",
+                    moodDescription = summary.summary ?: "",
+                    isLoading = summary.isLoading,
+                    onMoodSelected = { mood ->
+                        viewModel.updateMood(mood)
+                        Toast.makeText(
+                            context,
+                            "Thanks for giving your daily mood check 😊",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        SessionManager(context).saveMoodDate(context)
+                    },
+                    onClose = {
+                        showMoodCard = false
+                    },
+                    onSkip = {
+                        showMoodCard = false
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
 

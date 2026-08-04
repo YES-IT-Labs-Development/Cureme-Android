@@ -53,6 +53,7 @@ import com.bussiness.curemegptapp.ui.dialog.LogOutDialog
 import com.bussiness.curemegptapp.util.SessionManager
 import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bussiness.curemegptapp.BuildConfig
 import com.bussiness.curemegptapp.viewmodel.setting.SettingsViewModel
 
 @Composable
@@ -216,7 +217,7 @@ fun SettingsScreen(
 
             // Version Text
             Text(
-                text = stringResource(R.string.settings_version)/*"Version 0.0.1"*/,
+                text = "Version ${BuildConfig.VERSION_NAME}",
                 fontSize = 14.sp,
                 color = Color(0xFF697383),
                 fontFamily = FontFamily(Font(R.font.urbanist_medium)),
